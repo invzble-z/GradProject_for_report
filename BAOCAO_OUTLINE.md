@@ -71,7 +71,7 @@ Tài liệu này xác lập cấu trúc mục lục chi tiết đến cấp 3 ch
     *   3.1.3. Cấu trúc Session State và cơ chế định tuyến bất đồng bộ Mode-Dispatch trên Server FastAPI
 *   **3.2. Thiết kế Client App (PySide6) và Giải pháp Cô lập Loopback**
     *   3.2.1. Cơ chế bất đồng bộ tích hợp ứng dụng PySide6 với vòng lặp sự kiện `qasync` trên môi trường Windows
-    *   3.2.2. Giải pháp định tuyến âm thanh hai tuyến Route 0 (Local Default Speaker) và Route 1 (VB-CABLE Input)
+    *   3.2.2. Giải pháp định tuyến âm thanh hai tuyến Route 0 (VB-CABLE Input) và Route 1 (Local Default Speaker)
     *   3.2.3. Thuật toán tự động nhận diện và ánh xạ thiết bị âm thanh ảo VB-Audio Virtual Cable không cần quyền Administrator
     *   3.2.4. Cơ chế thu âm loopback WASAPI cô lập âm phản hồi (Acoustic Echo & Feedback Loop Mitigation)
 *   **3.3. Thiết kế Server App (FastAPI) phân tầng Hướng Engine (Plug-and-play)**
