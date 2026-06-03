@@ -167,4 +167,22 @@ graph TD
 
 ---
 
+## 5. QUY TẮC SOẠN THẢO BÁO CÁO VÀ ĐỒNG BỘ HÓA GIT (STRICT WRITING & VERSION CONTROL RULES)
+
+> [!IMPORTANT]
+> **QUY TẮC TUÂN THỦ KHUNG BÁO CÁO VÀ ĐỒNG BỘ HÓA PHIÊN BẢN**
+> - **Nguyên tắc bám sát Outline:** Tất cả các nội dung viết báo cáo phải dựa theo các mục đã được xác lập trong [BAOCAO_OUTLINE.md](file:///c:/Users/DELL/Downloads/DATN/Report/GradProject_for_report/BAOCAO_OUTLINE.md).
+> - **Thay đổi cấu trúc:** Nếu có bất kỳ thay đổi nào về thứ tự, thêm bớt đầu mục hoặc nội dung đầu mục so với dàn ý gốc, Agent **bắt buộc** phải dừng lại và thông báo chi tiết, xin ý kiến phản hồi từ tác giả (User). Chỉ thực hiện thay đổi khi được phê duyệt.
+> - **Tập trung báo cáo tích lũy:** File báo cáo chính thức và tích lũy duy nhất là [Final_report.md](file:///c:/Users/DELL/Downloads/DATN/Report/GradProject_for_report/Final_report.md). Mọi nội dung chi tiết được biên soạn hoặc chỉnh sửa sẽ được cập nhật trực tiếp vào file này.
+> - **Tự động lưu trữ Git:** Sau khi hoàn thành mỗi task viết báo cáo (như hoàn thiện một mục lớn hoặc một chương), Agent phải thực hiện chạy các lệnh Git: `git add .`, `git commit -m "[thông điệp chi tiết về nội dung đã hoàn thành]"` và `git push` để đẩy code lên repository từ xa. Tác giả cần cấu hình sẵn thông tin đăng nhập Git (credentials) để tránh treo luồng.
+
+> [!TIP]
+> **QUY TẮC VĂN PHONG HỌC THUẬT VÀ CHẤT LƯỢNG KHOA HỌC**
+> - **Văn phong khoa học (Academic Tone):** Sử dụng ngôn ngữ viết học thuật chuẩn xác, mang tính khách quan và khoa học. Tránh sử dụng văn phong nói hoặc từ ngữ đánh giá cảm tính chủ quan (không viết *"rất tốt/khá nhanh"*, thay vào đó viết *"giảm độ trễ suy luận xuống 32% (từ 120ms xuống 81.6ms)"*).
+> - **Dựa trên dữ liệu thực nghiệm (Evidence-Based Drafting):** Trích xuất chính xác các số liệu, bảng biểu, đồ thị từ kết quả thực nghiệm huấn luyện và kiểm thử hệ thống trong codebase. Không giả lập hoặc bịa đặt số liệu.
+> - **Đồng bộ thuật ngữ chuyên ngành:** Thống nhất các khái niệm tiếng Anh/tiếng Việt xuyên suốt tài liệu (ví dụ: *VITS, PhoWhisper, NLLB-200, Silero VAD, Spectrogram, Latent Space, Normalizing Flows*).
+> - **Định dạng Công thức và Sơ đồ:** Sử dụng ký pháp LaTeX chuẩn cho công thức toán học và định dạng khối mã/sơ đồ Mermaid hợp lệ để trực quan hóa kiến trúc hệ thống.
+
+---
+
 *Tài liệu này được lưu trữ để hướng dẫn tất cả các AI Agent tương tác với thư mục làm việc này. Chế độ hoạt động bảo toàn mã nguồn đã được thiết lập thành công.*
