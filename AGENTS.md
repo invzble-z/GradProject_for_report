@@ -174,6 +174,7 @@ graph TD
 > - **Nguyên tắc bám sát Outline:** Tất cả các nội dung viết báo cáo phải dựa theo các mục đã được xác lập trong [BAOCAO_OUTLINE.md](file:///c:/Users/DELL/Downloads/DATN/Report/GradProject_for_report/BAOCAO_OUTLINE.md).
 > - **Thay đổi cấu trúc:** Nếu có bất kỳ thay đổi nào về thứ tự, thêm bớt đầu mục hoặc nội dung đầu mục so với dàn ý gốc, Agent **bắt buộc** phải dừng lại và thông báo chi tiết, xin ý kiến phản hồi từ tác giả (User). Chỉ thực hiện thay đổi khi được phê duyệt.
 > - **Tập trung báo cáo tích lũy:** File báo cáo chính thức và tích lũy duy nhất là [Final_report.md](file:///c:/Users/DELL/Downloads/DATN/Report/GradProject_for_report/Final_report.md). Mọi nội dung chi tiết được biên soạn hoặc chỉnh sửa sẽ được cập nhật trực tiếp vào file này.
+> - **Nguyên tắc đọc mã nguồn trước khi viết (Code-First Verification):** Trước khi viết bất kỳ phần, mục lớn hay mục nhỏ nào trong báo cáo có liên quan đến khía cạnh kỹ thuật, thuật toán hoặc kết quả thực nghiệm, Agent bắt buộc phải chủ động đọc tệp mã nguồn liên quan (view_file) hoặc tài liệu thực nghiệm thô để hiểu chính xác bản chất hoạt động của hệ thống, không tự ý đoán hoặc diễn đạt mông lung.
 > - **Tự động lưu trữ Git:** Sau khi hoàn thành mỗi task viết báo cáo (như hoàn thiện một mục lớn hoặc một chương), Agent phải thực hiện chạy các lệnh Git: `git add .`, `git commit -m "[thông điệp chi tiết về nội dung đã hoàn thành]"` và `git push` để đẩy code lên repository từ xa. Tác giả cần cấu hình sẵn thông tin đăng nhập Git (credentials) để tránh treo luồng.
 
 > [!TIP]
