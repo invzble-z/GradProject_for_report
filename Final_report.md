@@ -97,16 +97,53 @@ Sinh viên thực hiện
 
 ---
 
-### LỜI MỞ ĐẦU / TÓM TẮT ĐỒ ÁN (Executive Summary)
+### LỜI MỞ ĐẦU (Introduction)
 
-Trong bối cảnh hội nhập quốc tế sâu rộng và sự phổ biến của các cuộc họp trực tuyến trực tiếp hai chiều Anh - Việt, nhu cầu về một công cụ dịch thuật hội thoại tức thời với độ trễ thấp và độ tự nhiên cao ngày càng trở nên cấp thiết. Đồ án này tập trung nghiên cứu, phát triển và tối ưu hóa **Hệ thống Dịch giọng nói thời gian thực song hướng Anh - Việt (S2ST)** hoạt động dưới mô hình máy khách - máy chủ (Client-Server) qua giao thức WebSocket song công.
+Trong bối cảnh toàn cầu hóa và sự bùng nổ của chuyển đổi số, giao tiếp xuyên ngôn ngữ trở thành cầu nối quyết định sự thành công của các doanh nghiệp, tổ chức và hoạt động hợp tác khoa học quốc tế. Tuy nhiên, rào cản ngôn ngữ, đặc biệt trong các cuộc họp trực tuyến trực tiếp song hướng giữa hai ngôn ngữ Anh và Việt, vẫn là một thách thức lớn. Hệ thống dịch giọng nói trực tiếp sang giọng nói (Speech-to-Speech Translation - S2ST) là giải pháp tối ưu nhằm tái tạo chu kỳ hội thoại tự nhiên của con người: lắng nghe giọng nói nguồn, dịch thuật ngữ nghĩa và tổng hợp lại bằng giọng nói đích. Đồ án này tập trung nghiên cứu, phát triển và tối ưu hóa **Hệ thống dịch giọng nói thời gian thực song hướng Anh - Việt (S2ST)** hoạt động dưới mô hình máy khách - máy chủ (Client-Server) qua kết nối WebSocket song công, nhằm hướng tới sự cân bằng tối ưu giữa độ trễ và chất lượng tự nhiên của giọng nói dịch thuật.
 
-Để hiện thực hóa hệ thống này một cách hiệu quả trên tài nguyên phần cứng giới hạn (GPU đơn đám mây Nvidia T4 trên máy chủ kết hợp với CPU local tại máy khách), đề tài đã giải quyết ba thách thức nghiên cứu chính:
-1.  **Tối ưu hóa độ trễ tích lũy (Cumulative Latency):** Thiết kế pipeline bất đồng bộ 3 tầng tích hợp với mô hình cắt câu động *Silero VAD* tối ưu ở ngưỡng 450ms, kết hợp giải thuật đệm dịch ngắn (Short-MT buffering) và bộ tách câu dự phòng dấu phẩy (*Comma Fallback Splitter*). 
-2.  **Thiếu hụt mô hình TTS giọng nam tiếng Việt tự nhiên và nhẹ:** Nghiên cứu quy trình tinh chỉnh chuyển đổi giới tính giọng nói (*Cross-Gender Fine-tuning*) dựa trên kiến trúc *VITS (Piper TTS)* sử dụng base checkpoint giọng nữ miền Nam `vais1000-medium`. Đề xuất giải pháp *2-Pass Phoneme Mapping Workaround* để xử lý triệt để xung đột bảng chữ cái espeak-ng và lượng tử hóa mô hình sang dạng FP16 giảm 50% dung lượng.
-3.  **Cách ly phản hồi âm (Echo & Feedback Loop):** Triển khai giải pháp định tuyến âm thanh ảo thông qua bộ ghi WASAPI cô lập tuyến luồng máy khách trên hệ điều hành Windows mà không yêu cầu đặc quyền Quản trị viên (Administrator).
+#### 1. Lý do lựa chọn đề tài
+Việc hiện thực hóa một hệ thống S2ST thời gian thực song hướng (Anh - Việt) trong môi trường phòng họp trực tuyến đối mặt với bốn thách thức công nghệ cốt lõi:
+- **Độ trễ tích lũy phân tầng (Cascaded Latency):** Hệ thống S2ST tiêu chuẩn bao gồm ba khối chức năng hoạt động tuần tự: Nhận dạng tiếng nói (STT) $\rightarrow$ Dịch máy thần kinh (NMT) $\rightarrow$ Tổng hợp tiếng nói (TTS). Trễ đầu-cuối ($L_{total} = L_{STT} + L_{MT} + L_{TTS} + L_{network}$) nếu không được tối ưu sẽ vượt quá ngưỡng từ 4.0 đến 6.0 giây, phá vỡ nhịp điệu hội thoại tự nhiên và gây ra hiện tượng nói đè.
+- **Đặc thù ngôn ngữ tiếng Việt:** Tiếng Việt là ngôn ngữ đơn âm tiết có tính thanh điệu phức tạp. Các mô hình phân đoạn giọng nói (VAD) thông thường dễ nhận nhầm khoảng lặng tự nhiên giữa các cụm từ là điểm kết thúc câu (gây dịch cụt, mất ngữ cảnh), hoặc cắt mất phụ âm cuối yếu trong tiếng Anh/tiếng Việt khi phát âm nhanh (làm giảm độ chính xác nhận dạng STT).
+- **Thiếu hụt mô hình TTS giọng nam tiếng Việt chất lượng cao:** Các mô hình TTS nén nhẹ hoạt động trong thời gian thực (như Piper TTS) trên cộng đồng mã nguồn mở hiện chỉ cung cấp checkpoint giọng nữ miền Nam (`vi_VN-vais1000-medium`), hoàn toàn thiếu vắng giọng nam miền Nam tự nhiên, rõ chữ.
+- **Vòng lặp phản hồi âm học (Acoustic Feedback Loop):** Trong phòng họp song hướng, nếu âm thanh dịch của đối tác phát ra từ loa máy khách bị thu âm ngược lại bởi micro của chính người dùng đó, hệ thống sẽ rơi vào vòng lặp dịch thuật hỗn loạn vô hạn và gây hiện tượng hú lớn do cộng hưởng âm.
 
-Kết quả thực nghiệm cho thấy quy trình kiểm soát chất lượng dữ liệu STT QC sử dụng *PhoWhisper-large* trên tập dữ liệu *VieNeu-TTS-140h* đã lọc sạch thành công tập dữ liệu 1500 câu chuẩn (~2.5 giờ). Mô hình Piper TTS giọng nam miền Nam tiếng Việt sau huấn luyện đã hội tụ tốt ở 3000 epochs, cho ra chất lượng âm phổ tự nhiên vượt trội với điểm số NISQA MOS tiệm cận giọng thật. Quá trình lượng tử hóa FP16 giúp giảm kích thước mô hình từ 63MB xuống 32MB, đưa thời gian đáp ứng chặng cuối xuống dưới mức thời gian thực trên các CPU phân khúc phổ thông. Hệ thống thử nghiệm thực tế đảm bảo luồng dịch song hướng trơn tru, triệt tiêu hoàn toàn vòng lặp phản hồi âm thanh và kiểm soát tốt độ trễ nhận thức đầu-cuối.
+Từ các lý do trên, việc nghiên cứu các giải pháp tối ưu hóa độ trễ, tinh chỉnh mô hình giọng nam Việt từ tài nguyên giới hạn và thiết lập giải pháp cô lập luồng âm thanh máy khách là vô cùng cấp thiết và có ý nghĩa thực tiễn cao.
+
+#### 2. Mục tiêu nghiên cứu
+Đồ án hướng tới các mục tiêu cụ thể sau:
+- **Thiết kế hệ thống S2ST song hướng thời gian thực:** Xây dựng hoàn chỉnh kiến trúc Client-Server kết nối qua giao thức WebSocket, kiểm soát và giảm thiểu tổng độ trễ cumulative đầu-cuối xuống dưới ngưỡng nhận thức tự nhiên của hội thoại thường nhật.
+- **Tối ưu hóa các chặng trung gian:** Đề xuất và triển khai các thuật toán xử lý luồng (VAD Hangover, Short-MT Buffering kết hợp Watchdog flush và Comma Fallback Splitter) nhằm giảm thiểu độ trễ Time-to-First-Audio (TTFA) của chặng TTS mà vẫn đảm bảo tính toàn vẹn ngữ nghĩa.
+- **Nghiên cứu quy trình tinh chỉnh Piper TTS giọng nam Việt:** Ứng dụng phương pháp chuyển giới tính giọng nói (*Cross-Gender Fine-tuning*) để tạo ra mô hình giọng nam miền Nam từ tập dữ liệu giới hạn, nén lượng tử hóa sang định dạng FP16 siêu nhẹ (~32MB) chạy mượt mà trên CPU phân khúc phổ thông.
+- **Cách ly phản hồi âm học ngầm:** Xây dựng giải pháp định tuyến âm thanh ảo hai lộ tuyến độc lập, sử dụng API ghi âm loopback WASAPI để cô lập triệt để vòng lặp phản hồi âm mà không yêu cầu đặc quyền Quản trị viên (Administrator).
+
+#### 3. Đối tượng và phạm vi nghiên cứu
+- **Đối tượng nghiên cứu:** 
+  - Các kiến trúc học sâu tiên tiến phục vụ xử lý giọng nói và ngôn ngữ: Mạng tự chú ý và Transformer trong Whisper/PhoWhisper, mô hình dịch máy đa ngôn ngữ NLLB-200 và thư viện tối ưu hóa CTranslate2, kiến trúc VITS nén nhẹ (Piper TTS) dựa trên Normalizing Flows và GANs, mô hình phát hiện hoạt động giọng nói Silero VAD.
+  - Các giao thức truyền thông mạng song công thời gian thực (WebSocket) và cơ chế định tuyến âm thanh ảo trên hệ điều hành Windows (WASAPI, VB-Audio Virtual Cable).
+- **Phạm vi nghiên cứu:**
+  - Cặp ngôn ngữ dịch thuật song hướng: Anh - Việt và Việt - Anh.
+  - Môi trường thử nghiệm máy chủ: Phân bổ tài nguyên trên duy nhất một GPU tầm trung NVIDIA Tesla T4 (Google Colab / FastAPI server).
+  - Môi trường thử nghiệm máy khách: Chạy ứng dụng đồ họa PySide6 tích hợp `qasync` trực tiếp trên hệ điều hành Windows 10/11 local.
+  - Tập dữ liệu huấn luyện TTS: Lọc và chuẩn hóa dữ liệu giọng nam miền Nam từ bộ dữ liệu `VieNeu-TTS-140h`.
+
+#### 4. Cách tiếp cận
+Để giải quyết bài toán đặt ra dưới điều kiện giới hạn về phần cứng, đồ án đề xuất các phương pháp tiếp cận sau:
+- **Tiếp cận kiến trúc phân tán tối ưu hóa tài nguyên:** Phân bổ các tác vụ STT và NMT nặng (đòi hỏi tính toán ma trận lớn) lên GPU đám mây của máy chủ thông qua các facade bất đồng bộ; đồng thời đẩy tác vụ suy luận TTS (nhờ mô hình Piper nén nhẹ) và điều phối âm thanh về CPU máy khách nhằm triệt tiêu băng thông truyền tải âm thanh chặng cuối trên mạng.
+- **Tiếp cận tối ưu hóa song song bất đồng bộ:** Thiết lập các "Execution Lane" song song có cơ chế khóa hoạt động (`operation_lock`) trên từng model entry để tránh nghẽn GPU VRAM, kết hợp cơ chế Warmup khởi động nóng để giảm trễ cold-start về 0.
+- **Tiếp cận chuyển giao tri thức (Transfer Learning) cho TTS:** Thay vì huấn luyện mô hình VITS giọng nam từ đầu vốn cần lượng dữ liệu khổng lồ, đồ án thực hiện Cross-Gender Fine-tuning dựa trên không gian nhúng âm vị có sẵn của checkpoint gốc giọng nữ `vais1000-medium`, giúp mô hình nhanh chóng hội tụ và đạt độ tự nhiên cao chỉ với 2.5 giờ dữ liệu nam sạch.
+- **Tiếp cận cô lập tuyến âm vật lý - ảo (Routing Isolation):** Cô lập luồng dịch xuôi (VI-EN) đẩy thẳng vào thiết bị âm thanh ảo đầu vào làm micro cho phần mềm họp, tách biệt hoàn toàn với luồng dịch ngược (EN-VI) phát ra loa ngoài, triệt tiêu phản hồi âm học mà không can thiệp sâu vào nhân hệ điều hành.
+
+#### 5. Phương pháp nghiên cứu
+Đồ án áp dụng kết hợp các phương pháp nghiên cứu sau:
+- **Phương pháp nghiên cứu lý thuyết:** Nghiên cứu tài liệu chuyên khảo về xử lý tín hiệu số, kiến trúc Transformer chú ý tự thân, mô hình biến phân tự động điều kiện (Conditional VAE), Normalizing Flows, và mạng đối nghịch tạo sinh (GAN) trong tổng hợp tiếng nói.
+- **Phương pháp thực nghiệm và xây dựng hệ thống:**
+  - Xây dựng quy trình tự động hóa kiểm soát chất lượng dữ liệu (STT QC) sử dụng mô hình *PhoWhisper-large* đánh giá chéo Word Error Rate (WER) nhằm loại bỏ clips lệch pha, trích xuất tập dữ liệu sạch 1500 câu chuẩn.
+  - Tiến hành huấn luyện thực nghiệm mô hình TTS trên Google Colab qua 3000 epochs, theo dõi các đường cong hội tụ loss (Generator/Discriminator/Mel/KL), sau đó lượng tử hóa mô hình sang FP16 ONNX.
+  - Xây dựng phần mềm client PySide6 thực thi định tuyến và ghi âm loopback WASAPI.
+- **Phương pháp đánh giá và kiểm chứng:**
+  - Đo đạc định lượng khách quan: Sử dụng hệ thống telemetry đo trễ xử lý từng phân tầng, tính toán chỉ số WER của STT, hệ số thời gian thực RTF của TTS và ứng dụng mô hình deep learning *NISQA* để chấm điểm MOS khách quan cho giọng nói tổng hợp.
+  - Đo đạc định tính chủ quan: Khảo sát và lấy điểm Mean Opinion Score (Human MOS) từ người dùng thực tế dựa trên bộ 25 câu test chuẩn để đánh giá độ tự nhiên, rõ chữ và tính biểu cảm của giọng nam miền Nam được tinh chỉnh.
 
 ---
 
