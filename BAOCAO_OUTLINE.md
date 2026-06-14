@@ -65,28 +65,24 @@ Tài liệu này xác lập cấu trúc mục lục chi tiết đến cấp 3 ch
 ---
 
 ### CHƯƠNG 3. PHƯƠNG PHÁP NGHIÊN CỨU ĐỀ XUẤT (Tối đa 20 trang)
-*   **3.1. Thiết kế Kiến trúc Hệ thống Tổng quát (S2ST Client-Server)**
-    *   3.1.1. Sơ đồ khối kiến trúc kết nối song công thời gian thực qua giao thức WebSocket
-    *   3.1.2. Thiết kế định dạng khung truyền tải nhị phân (Binary Pipeline Frame) định tuyến route và khung điều khiển JSON (Control Frame)
-    *   3.1.3. Cấu trúc Session State và cơ chế định tuyến bất đồng bộ Mode-Dispatch trên Server FastAPI
-*   **3.2. Thiết kế Client App (PySide6) và Giải pháp Cô lập Loopback**
-    *   3.2.1. Cơ chế bất đồng bộ tích hợp ứng dụng PySide6 với vòng lặp sự kiện `qasync` trên môi trường Windows
-    *   3.2.2. Giải pháp định tuyến âm thanh hai tuyến Route 0 (VB-CABLE Input) và Route 1 (Local Default Speaker)
-    *   3.2.3. Thuật toán tự động nhận diện và ánh xạ thiết bị âm thanh ảo VB-Audio Virtual Cable không cần quyền Administrator
-    *   3.2.4. Cơ chế thu âm loopback WASAPI cô lập âm phản hồi (Acoustic Echo & Feedback Loop Mitigation)
-*   **3.3. Thiết kế Server App (FastAPI) phân tầng Hướng Engine (Plug-and-play)**
-    *   3.3.1. Polymorphic Facade Pattern: Đồng bộ hóa 85% kiến trúc giao tiếp 3 AI Engine (STT, MT, TTS Spec Spec)
-    *   3.3.2. Kiến trúc song song hóa Execution Lane (Worker pools và operation locks) ngăn ngừa race condition trên GPU VRAM
-    *   3.3.3. Giải thuật Preload & Warmup triệt tiêu hoàn toàn độ trễ khởi động lạnh (Cold-start latency) lúc startup
-*   **3.4. Thiết kế Pipeline Streaming STT-MT-TTS tối ưu hóa thời gian thực**
-    *   3.4.1. Cơ chế cắt câu động Silero VAD tích hợp hangover frame bảo toàn phụ âm cuối cho bộ nhận dạng Whisper
-    *   3.4.2. Giải thuật đệm dịch ngắn (Short-MT buffering) nâng cao ngữ điệu và Watchdog tự động flush sau 3 giây im lặng
-    *   3.4.3. Quy trình chia tách câu đa tầng (SBD) và Comma Fallback Splitter cho suy luận TTS cuốn chiếu liên tục
-    *   3.4.4. Cơ chế đo đạc hiệu năng chặng mạng bằng telemetry pipeline.metric và giải pháp rollup segment_id đầu cuối
-*   **3.5. Quy trình thực nghiệm huấn luyện mô hình Piper TTS giọng Nam Việt**
-    *   3.5.1. Phương pháp Cross-Gender Fine-tuning kế thừa không gian nhúng âm vị từ base checkpoint `vais1000-medium`
-    *   3.5.2. Giải pháp tiền xử lý và đồng bộ âm vị 2-Pass Workaround loại bỏ ký tự lạ espeak-ng tránh lỗi IndexError VITS
-    *   3.5.3. Kỹ thuật vá mã nguồn (Regex Inline Patching) tối ưu hóa Tốc độ học (Learning Rate = 1e-4) trong PyTorch Lightning
+*   **3.1. Thiết kế Hệ thống Tổng quát và Giao thức WebSocket**
+    *   3.1.1. Luồng dữ liệu S2ST song hướng thời gian thực
+    *   3.1.2. Đặc tả khung truyền nhị phân và điều khiển JSON
+    *   3.1.3. Cơ chế định tuyến bất đồng bộ Mode-Dispatch và Quản lý Session State
+*   **3.2. Nhận dạng Tiếng nói Streaming và Trực quan hóa Văn bản (Bài toán 1)**
+    *   3.2.1. Phân đoạn giọng nói động Silero VAD và Hangover Frame
+    *   3.2.2. Nhận dạng tiếng nói bất đồng bộ và cơ chế đệm trượt ngữ cảnh
+*   **3.3. Dịch máy Hội thoại và Bộ đệm Xử lý Thời gian thực (Bài toán 2)**
+    *   3.3.1. Giải thuật đệm dịch ngắn (Short-MT buffering) nâng cao ngữ nghĩa
+    *   3.3.2. Cơ chế giám sát Watchdog flush giải phóng hàng đợi dịch thuật
+*   **3.4. Thực nghiệm Huấn luyện và Đánh giá Mô hình Piper TTS (Bài toán 3)**
+    *   3.4.1. Tiền xử lý dữ liệu và Kiểm soát chất lượng căn chỉnh (STT QC)
+    *   3.4.2. Huấn luyện chuyển đổi giới tính giọng nói (Cross-Gender Fine-tuning)
+    *   3.4.3. Giải pháp đồng bộ âm vị 2-Pass và vá mã nguồn PyTorch Lightning
+    *   3.4.4. Thiết lập hệ thống đánh giá hiệu năng và chất lượng giọng nói (NISQA, Human MOS, RTF, WER)
+*   **3.5. Điều phối Âm thanh Đầu ra và Cô lập Loopback Máy khách**
+    *   3.5.1. Cơ chế định tuyến RoutePlayer phân tách kênh phát
+    *   3.5.2. Ghi âm WASAPI Loopback cô lập âm phản hồi (Echo Mitigation)
 
 ---
 
