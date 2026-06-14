@@ -302,134 +302,13 @@ Nội dung báo cáo Đồ án tốt nghiệp Kỹ sư AI được cấu trúc t
 *   **CHƯƠNG 1. GIỚI THIỆU ĐỀ TÀI:** Trình bày bối cảnh, lý do lựa chọn đề tài dịch giọng nói song hướng Anh - Việt thời gian thực (S2ST). Phát biểu chi tiết bốn bài toán nghiên cứu chính (độ trễ tích lũy, đặc thù ngắt câu tiếng Việt, thiếu hụt giọng nam tổng hợp và vòng lặp phản hồi âm học). Xác lập mục tiêu, các đóng góp kỹ thuật cốt lõi và phạm vi nghiên cứu thực nghiệm của đề tài.
 *   **CHƯƠNG 2. TỔNG QUAN TÀI LIỆU VÀ CƠ SỞ LÝ THUYẾT:** Hệ thống hóa toàn bộ nền tảng lý thuyết liên quan đến hệ thống S2ST. Phân tích nguyên lý mạng Transformer trong nhận dạng giọng nói (Whisper, PhoWhisper), cấu trúc dịch máy đa ngôn ngữ (NLLB-200) và tối ưu suy luận CTranslate2. Nghiên cứu sâu toán học của mô hình tổng hợp tiếng nói đầu-cuối *VITS* (Posterior/Prior Encoder, Normalizing Flows, HiFi-GAN Decoder và đối nghịch Discriminators) cùng thuật toán phát hiện hoạt động giọng nói *Silero VAD*. Chỉ ra các nghiên cứu liên quan và khoảng trống công nghệ hiện tại.
 *   **CHƯƠNG 3. PHƯƠNG PHÁP NGHIÊN CỨU ĐỀ XUẤT:** Chi tiết hóa thiết kế kiến trúc hệ thống Client-Server sử dụng kết nối song công WebSocket và định dạng khung truyền tải dữ liệu. Trình bày thiết kế Client PySide6 kết hợp giải pháp cách ly WASAPI loopback và định tuyến RoutePlayer tự động nhận diện VB-Cable. Chi tiết hóa kiến trúc FastAPI Server với mô hình thiết kế *Polymorphic Facade Pattern* đồng bộ 3 AI Engine và các giải thuật tối ưu độ trễ (VAD Hangover, Short-MT Buffering, Comma Fallback Splitter). Đề xuất quy trình thực nghiệm Cross-Gender Fine-tuning Piper TTS giọng nam Việt và giải pháp đồng bộ hóa âm vị 2-Pass.
-*   **CHƯƠNG 4. THỰC NGHIỆM VÀ KẾT QUẢ:** Mô tả môi trường phần cứng, giải pháp đóng gói môi trường ảo và quy trình tiền xử lý tập dữ liệu VieNeu-TTS-140h bằng kiểm định chéo STT QC. Trình bày các chỉ số đo đạc hiệu năng khách quan (Mel loss, KL loss, WER, RTF, trễ telemetry đầu-cuối) và khảo sát chủ quan Human MOS cùng mô hình học sâu NISQA MOS. Phân tích so sánh kết quả thực nghiệm hệ thống client, so sánh chất lượng mô hình Piper FP32 và bản lượng tử hóa FP16, đối sánh hiệu quả triệt tiêu tiếng vọng và tối ưu độ trễ chặng.
-*   **CHƯƠNG 5. KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN:** Tổng kết những đóng góp khoa học và thực tiễn của đề tài. Thẳng thắn nhìn nhận các hạn chế kỹ thuật hiện tại của hệ thống (phụ thuộc GPU đám mây Colab, hiện tượng nghẽn hàng đợi đầu ra). Đề xuất ba định hướng nghiên cứu tiếp theo để hoàn thiện và đưa sản phẩm vào ứng dụng thực tế.
+*   **CHƯƠNG 4. THỰC NGHIỆM VÀ KẾT QUẢ:** Mô tả môi trường phần cứng, giải pháp đóng gói môi trường ảo và quy trình tiền xử lý tập dữ liệu VieNeu-TTS-140h bằng kiểm định chéo STT QC. Trình bày các chỉ số đo đạc hiệu năng khách quan (Mel loss, KL loss, WER, RTF, trễ telemetry đầu-cuối) và khảo sát chủ quan Human MOS cùng mô hình học sâu NISQA MOS. Phân tích so sánh kết quả thực nghiệm hệ thống client, so sánh chất lượng mô hình Piper FP32 và bản lượng tử hóa FP16, đối## CHƯƠNG 3. PHƯƠNG PHÁP NGHIÊN CỨU ĐỀ XUẤT
 
-#### 1.5.2. Sơ đồ liên kết logic học thuật giữa các chương
-
-Mối quan hệ và sự liên kết học thuật giữa các chương trong báo cáo được trực quan hóa thông qua sơ đồ luồng logic dưới đây:
-
-```mermaid
-graph TD
-    %% Định nghĩa các node chương
-    C1["Chương 1: Giới thiệu đề tài<br/>(Xác định thách thức kỹ thuật & mục tiêu đồ án)"]
-    C2["Chương 2: Cơ sở lý thuyết<br/>(Nghiên cứu nguyên lý VITS, Whisper, NLLB & VAD)"]
-    C3["Chương 3: Phương pháp đề xuất<br/>(Thiết kế Client WASAPI, Server Facade & Cross-Gender tuning)"]
-    C4["Chương 4: Thực nghiệm & Kết quả<br/>(Đánh giá chất lượng MOS, đo đạc trễ & lượng tử hóa FP16)"]
-    C5["Chương 5: Kết luận & Phát triển<br/>(Đánh giá đóng góp & hướng tối ưu hóa tương lai)"]
-
-    %% Thiết lập mối quan hệ logic
-    C1 -->|"Đặt ra yêu cầu tối ưu hóa và Scarcity giọng nam"| C3
-    C2 -->|"Cung cấp nền tảng toán học và mô hình nền tảng"| C3
-    C3 -->|"Cung cấp kiến trúc hệ thống và mô hình đã fine-tune"| C4
-    C4 -->|"Cung cấp số liệu chứng minh tính đúng đắn"| C5
-    C1 -->|"Xác lập phạm vi và mục tiêu đối chiếu"| C5
-    
-    %% Định dạng style màu sắc SLEEK
-    style C1 fill:#1e1e2f,stroke:#4a4a8a,stroke-width:2px,color:#ffffff
-    style C2 fill:#1e1e2f,stroke:#4a4a8a,stroke-width:2px,color:#ffffff
-    style C3 fill:#2d1b4e,stroke:#9b5de5,stroke-width:2px,color:#ffffff
-    style C4 fill:#1b365d,stroke:#00b4d8,stroke-width:2px,color:#ffffff
-    style C5 fill:#1a332e,stroke:#2a9d8f,stroke-width:2px,color:#ffffff
-```
-
----
-
----
-
-## CHƯƠNG 2. TỔNG QUAN TÀI LIỆU VÀ CƠ SỞ LÝ THUYẾT
-
-### 2.1. Cơ sở lý thuyết về Nhận dạng tiếng nói (STT)
-
-#### 2.1.1. Nguyên lý hoạt động của kiến trúc Self-Attention và Transformer trong xử lý tiếng nói
-
-Kiến trúc Transformer, được giới thiệu ban đầu bởi Vaswani và các cộng sự (2017), đã cách mạng hóa lĩnh vực xử lý ngôn ngữ tự nhiên (NLP) và xử lý tiếng nói (Speech Processing) nhờ cơ chế chú ý tự thân (Self-Attention). Khác với các mạng hồi quy (RNN, LSTM) xử lý dữ liệu tuần tự từng bước và dễ gặp hiện tượng tiêu biến gradient khi xử lý chuỗi dài, Transformer cho phép tính toán song song hóa toàn bộ chuỗi đầu vào và học trực tiếp các phụ thuộc dài hạn (long-range dependencies).
-
-##### 1. Cơ chế Self-Attention toán học
-Trọng tâm của kiến trúc Self-Attention là việc ánh xạ một tập hợp các vector biểu diễn đầu vào thành ba không gian vector: Truy vấn (Query - $Q$), Khóa (Key - $K$), và Giá trị (Value - $V$). Cho một ma trận đầu vào $X \in \mathbb{R}^{T \times d_{model}}$ (với $T$ là chiều dài chuỗi tín hiệu và $d_{model}$ là số chiều biểu diễn), các ma trận $Q, K, V$ được tính toán qua các phép nhân trọng số tuyến tính:
-
-$$Q = XW_Q, \quad K = XW_K, \quad V = XW_V$$
-
-Trong đó $W_Q, W_K \in \mathbb{R}^{d_{model} \times d_k}$ và $W_V \in \mathbb{R}^{d_{model} \times d_v}$ là các ma trận trọng số học được trong quá trình huấn luyện. Trọng số chú ý (Attention weights) được xác định bằng tích vô hướng scaled dot-product giữa truy vấn và khóa, sau đó chuẩn hóa qua hàm Softmax để tạo ra phân phối xác suất:
-
-$$\text{Attention}(Q, K, V) = \text{Softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V$$
-
-Hệ số tỷ lệ $\frac{1}{\sqrt{d_k}}$ đóng vai trò vô cùng quan trọng nhằm kiểm soát độ lớn của tích vô hướng khi số chiều $d_k$ lớn, tránh đưa hàm Softmax vào các vùng có gradient cực nhỏ (bị bão hòa).
-
-Để nâng cao khả năng mô hình hóa các mối quan hệ phức tạp ở các vị trí khác nhau trong chuỗi âm học, cơ chế Chú ý tự thân đa đầu (**Multi-Head Attention - MHA**) được triển khai bằng cách chia tách truy vấn, khóa và giá trị thành $h$ phần độc lập (đầu chú ý), tính toán attention riêng biệt và ghép nối (concatenate) lại:
-
-$$\text{MultiHead}(Q, K, V) = \text{Concat}(\text{head}_1, \dots, \text{head}_h)W^O$$
-
-$$\text{head}_i = \text{Attention}(QW_i^Q, KW_i^K, VW_i^V)$$
-
-##### 2. Ứng dụng trong xử lý tiếng nói (Speech Transformer)
-Khi áp dụng Transformer vào tín hiệu âm thanh, chuỗi đầu vào không phải là các token chữ viết mà là các khung phổ âm (spectrogram frames). Do tín hiệu âm thanh có tần số lấy mẫu cao (ví dụ: 16kHz tương đương 16000 điểm mẫu mỗi giây), chuỗi đầu vào ban đầu cực kỳ dài. Để giảm tải tính toán cho các lớp Self-Attention (vốn có độ phức tạp thuật toán tăng theo cấp số mũ $O(T^2)$), tín hiệu âm thanh thô thường được đi qua một khối tích chập 1D hoặc 2D (Convolutional Subsampling) để giảm tần số lấy mẫu theo thời gian (downsampling) đi 4 đến 8 lần trước khi cộng với vector Mã hóa vị trí (**Positional Encoding**) để đưa vào mạng Encoder-Decoder.
-
-#### 2.1.2. Cơ chế nhận dạng tiếng nói dạng Transformer của mô hình OpenAI Whisper và Faster-Whisper
-
-##### 1. Kiến trúc mô hình OpenAI Whisper
-OpenAI Whisper (Radford và các cộng sự, 2022) là một hệ thống nhận dạng giọng nói đa nhiệm được huấn luyện có giám sát yếu (weakly supervised) trên **680,000 giờ** dữ liệu âm thanh đa ngôn ngữ thu thập từ Internet. Mô hình được thiết kế theo kiến trúc Encoder-Decoder Transformer tiêu chuẩn:
-
-```
-[Audio thô] → [Tính Log-Mel Spectrogram (80 kênh)]
-                    ↓
-        [CNN 1D (Khối lượng giảm mẫu x2)]
-                    ↓
-        [Positional Encoding]
-                    ↓
-       [Transformer Encoder Stack]
-                    ↓  (Cross-Attention)
-       [Transformer Decoder Stack] → [Token văn bản dự đoán]
-```
-
--   **Tiền xử lý âm thanh:** Tín hiệu âm thanh đầu vào được resample về tần số 16,000 Hz, sau đó chuyển đổi thành đặc trưng Log-Magnitude Mel-spectrogram với 80 kênh tần số, kích thước cửa sổ phân tích (window size) 25ms và bước nhảy (hop size) 10ms. Audio buffer được cố định ở phân đoạn 30 giây (nếu ngắn hơn sẽ được đệm thêm khoảng lặng).
--   **Khối Encoder:** Log-Mel Spectrogram đi qua hai lớp tích chập 1D với kích thước filter bằng 3, bước nhảy bằng 2 và hàm kích hoạt GELU để nén chiều thời gian đi 2 lần. Sau đó, tín hiệu được mã hóa vị trí hình sin và đưa qua các khối Transformer Encoder.
--   **Khối Decoder:** Sử dụng cơ chế tự hồi quy kết hợp chú ý chéo (**Cross-Attention**) để đọc thông tin đặc trưng từ Encoder và sinh ra chuỗi ký tự/âm vị tương ứng. Mô hình tích hợp nhiều tác vụ đồng thời thông qua các token đặc biệt (`<|startoftranscript|>`, `<|nospeech|>`, `<|transcribe|>`, v.v.).
-
-##### 2. Tối ưu hóa suy luận với Faster-Whisper
-Faster-Whisper là một bản triển khai lại mô hình OpenAI Whisper sử dụng công nghệ engine suy luận **CTranslate2**. CTranslate2 là một thư viện tùy chỉnh viết bằng C++ chuyên biệt cho việc thực thi các mô hình Transformer với tốc độ và hiệu quả tối ưu nhất:
--   **Lượng tử hóa trọng số (Weight Quantization):** Chuyển đổi các trọng số của mô hình từ kiểu dữ liệu dấu phẩy động 32-bit (float32) sang số nguyên 8-bit (int8) hoặc bán chính xác 16-bit (float16). Quá trình này giúp giảm dung lượng mô hình đi 2 đến 4 lần (ví dụ: mô hình *small* từ ~960MB xuống còn ~240MB) và giảm đáng kể băng thông bộ nhớ cần thiết.
--   **Hợp nhất nhân tính toán (Kernel Fusion):** Gộp nhiều phép toán tuyến tính riêng lẻ trong Transformer (như phép nhân ma trận Attention, chuẩn hóa lớp LayerNorm, phép cộng bias và hàm kích hoạt) thành một nhân tính toán đơn nhất (fused kernel) chạy trực tiếp trên GPU/CPU, loại bỏ độ trễ do tải dữ liệu trung gian giữa các thanh ghi.
--   **Tái sử dụng bộ đệm (Buffer Reuse) và Song song hóa:** Triển khai bộ phân phối bộ nhớ tùy chỉnh để tránh cấp phát bộ nhớ động liên tục trong quá trình giải mã tự hồi quy (autoregressive decoding), kết hợp xử lý song song đa luồng hiệu năng cao bằng C++. Nhờ đó, Faster-Whisper đạt tốc độ suy luận nhanh gấp 4 lần so với bản triển khai PyTorch gốc của OpenAI trên cùng một phần cứng GPU/CPU.
-
-#### 2.1.3. Kiến trúc mô hình PhoWhisper được tinh chỉnh chuyên biệt cho ngôn ngữ tiếng Việt
-
-Mặc dù OpenAI Whisper đạt hiệu năng cao trên các ngôn ngữ phổ biến, độ chính xác của nó đối với tiếng Việt vẫn bị giới hạn do tỷ lệ dữ liệu tiếng Việt trong tập huấn luyện 680,000 giờ chiếm tỉ trọng rất nhỏ. Để giải quyết vấn đề này, VinAI đã phát triển và công bố mô hình **PhoWhisper** (arXiv:2406.02555).
-
-PhoWhisper được phát triển thông qua việc tinh chỉnh (fine-tuning) sâu mô hình Whisper gốc trên tập dữ liệu tiếng Việt chất lượng cao có quy mô lên tới **844 giờ**:
--   **Tập dữ liệu huấn luyện:** Bao gồm 844 giờ giọng nói tiếng Việt thu âm sạch sẽ từ nhiều nguồn khác nhau, bao gồm đài phát thanh, podcast, sách nói và dữ liệu hội thoại tự nhiên, bao phủ toàn bộ các giọng vùng miền chính tại Việt Nam (Bắc, Trung, Nam) với các tỷ lệ cân đối.
--   **Hiệu năng vượt trội:** Thực nghiệm công bố của VinAI cho thấy PhoWhisper đạt mức lỗi từ cực thấp (**SOTA WER là 4.97%** trên tập dữ liệu chuẩn VIVOS), vượt trội hoàn toàn so với các mô hình nhận dạng tiếng Việt thương mại và mã nguồn mở khác tại thời điểm công bố.
--   **Cấu trúc tích hợp hệ thống:** Trong hệ thống S2ST này, PhoWhisper được chuyển đổi sang định dạng CTranslate2 tương thích với backend `faster_whisper.WhisperModel`. Lớp facade `STTEngine` sẽ tự động định tuyến các yêu cầu nhận dạng có mã ngôn ngữ là `"vi"` sang lớp concrete `PhoWhisperEngine` (kế thừa lớp `FastWhisperEngine`). Điều này cho phép hệ thống tận dụng tối đa độ chính xác của PhoWhisper cho tiếng Việt đồng thời thừa hưởng toàn bộ tốc độ suy luận tối ưu và cơ chế truyền prompt của Faster-Whisper.
-
-### 2.2. Cơ sở lý thuyết về Dịch máy thần kinh (NMT)
-#### 2.2.1. Tổng quan cấu trúc dịch máy đa ngôn ngữ NLLB-200 (No Language Left Behind)
-#### 2.2.2. Kỹ thuật lượng tử hóa và tối ưu hóa tốc độ suy luận ctranslate2 (CTranslate2)
-
-### 2.3. Cơ sở lý thuyết về Tổng hợp tiếng nói (TTS) dựa trên kiến trúc VITS
-#### 2.3.1. Phân tích sâu kiến trúc VITS (Variational Inference with adversarial learning for end-to-end Text-to-Speech)
-#### 2.3.2. Vai trò toán học của Posterior Encoder (Mel-spectrogram sang latent z) và Prior Encoder (Text sang latent)
-#### 2.3.3. Cơ chế biến đổi phân bố đơn giản sang spectrogram phức tạp thông qua hệ thống Normalizing Flows
-#### 2.3.4. Mô hình tổng hợp sóng âm trực tiếp HiFi-GAN Decoder và cơ chế đánh giá qua đối nghịch (Discriminators: MPD, MSD)
-#### 2.3.5. Kiến trúc Piper TTS và cơ chế mã hóa âm vị (Phonemize) espeak-ng cho tiếng Việt
-
-### 2.4. Phân đoạn hoạt động giọng nói bằng mô hình Silero VAD
-#### 2.4.1. Thuật toán phân lớp Tín hiệu giọng nói (Speech) và Khoảng lặng (Silence) bằng mạng thần kinh nhân tạo nhẹ
-#### 2.4.2. Vai trò của Silero VAD trong việc chia đoạn tín hiệu đầu vào cho pipeline dịch streaming
-
-### 2.5. Các nghiên cứu liên quan & Khoảng trống nghiên cứu (Related Work & Research Gaps)
-#### 2.5.1. Đánh giá các giải pháp dịch thuật Speech-to-Speech hiện có trên thế giới (ưu nhược điểm và chi phí)
-#### 2.5.2. Hiện trạng các mô hình Piper tiếng Việt trên cộng đồng Rhasspy (sự thiếu hụt trầm trọng mô hình giọng nam Việt chất lượng)
-#### 2.5.3. Khoảng trống nghiên cứu về tối ưu độ trễ cumulative chặng S2S cho tài nguyên tính toán GPU/VRAM giới hạn
-
----
-
-## CHƯƠNG 3. PHƯƠNG PHÁP NGHIÊN CỨU ĐỀ XUẤT
-
-### 3.1. Thiết kế Hệ thống Tổng quát và Giao thức WebSocket
+### 3.1. Thiết kế Hệ thống Tổng quát và Quy trình Kết nối
 
 #### 3.1.1. Luồng dữ liệu S2ST song hướng thời gian thực
 
-Hệ thống dịch giọng nói sang giọng nói thời gian thực song hướng (Speech-to-Speech Translation - S2ST) được thiết kế theo mô hình kiến trúc phân tán Máy khách - Máy chủ (Client-Server). Việc phân bổ tài nguyên được tối ưu hóa bằng cách đẩy các tác vụ nhận dạng (STT) và dịch thuật (MT) có độ phức tạp tính toán lớn lên GPU NVIDIA Tesla T4 của máy chủ Cloud. Ngược lại, chặng tổng hợp giọng nói (TTS) nhờ sử dụng mô hình ONNX siêu nhẹ sẽ được đẩy về thực thi trực tiếp tại CPU của máy khách local. Thiết kế này giúp triệt tiêu hoàn toàn độ trễ truyền tải băng thông âm thanh chặng cuối trên mạng internet, đồng thời đảm bảo khả năng đáp ứng song song cho nhiều người dùng.
+Hệ thống dịch giọng nói sang giọng nói thời gian thực song hướng (Speech-to-Speech Translation - S2ST) được thiết kế theo mô hình kiến trúc phân tán Máy khách - Máy chủ (Client-Server). Việc phân bổ tài nguyên tính toán được tối ưu hóa bằng cách đẩy các tác vụ nhận dạng (STT) và dịch thuật (MT) có độ phức tạp tính toán lớn lên GPU NVIDIA Tesla T4 của máy chủ Cloud. Ngược lại, chặng tổng hợp giọng nói (TTS) nhờ sử dụng mô hình ONNX siêu nhẹ sẽ được đẩy về thực thi trực tiếp tại CPU của máy khách local. Thiết kế này giúp triệt tiêu hoàn toàn độ trễ truyền tải băng thông âm thanh chặng cuối trên mạng internet, đồng thời đảm bảo khả năng đáp ứng song song cho nhiều người dùng.
 
 Để liên kết các chặng xử lý và truyền nhận âm thanh liên tục, hệ thống sử dụng giao thức kết nối song công **WebSocket** (`/ws`). Sơ đồ luồng dữ liệu hai chiều (dịch xuôi Luồng 0 và dịch ngược Luồng 1) được thiết kế và mô tả chi tiết như sau:
 
@@ -476,167 +355,284 @@ sequenceDiagram
     Client->>Client: RoutePlayer (Route 1) -> Phát ra Loa/Tai nghe vật lý của Người dùng
 ```
 
-#### 3.1.2. Đặc tả khung truyền nhị phân và điều khiển JSON
+#### 3.1.2. Cơ chế đồng bộ hóa thời gian và luồng truyền tải dữ liệu
 
-Băng thông mạng truyền phát thời gian thực được tối ưu bằng cách phân tách dữ liệu truyền tải thành hai định dạng khung truyền có cấu trúc riêng biệt:
+Để giải quyết bài toán đồng bộ hóa và đo lường hiệu năng của hệ thống S2ST thời gian thực, quy trình truyền tải dữ liệu được thiết kế tập trung vào việc theo dõi dòng thời gian (timeline tracking) và phối hợp bất đồng bộ giữa máy khách và máy chủ.
 
-##### 1. Khung dữ liệu nhị phân (Binary Frame)
-Khung nhị phân chịu trách nhiệm vận chuyển các đoạn âm thanh thô. Để phân biệt nhanh loại dữ liệu và định hướng xử lý tại Server, tiêu đề khung (header) được thiết kế theo cấu trúc đánh dấu byte (marker-based):
-*   **Khung nhị phân cơ bản (Type `0x01`):**
-    $$\text{Frame}_{0x01} = [\text{Byte } 0: \text{Loại khung (0x01)}] \mathbin{\Vert} [\text{Byte } 1: \text{Route ID}] \mathbin{\Vert} [\text{Bytes } 2...: \text{Dữ liệu âm thanh PCM}]$
-*   **Khung nhị phân đồng bộ thời gian (Type `0x02`):**
-    $$\text{Frame}_{0x02} = [\text{Byte } 0: \text{Loại khung (0x02)}] \mathbin{\Vert} [\text{Byte } 1: \text{Route ID}] \mathbin{\Vert} [\text{Bytes } 2..9: \text{Nhãn thời gian } t_{client\_send} \text{ (u64 LE, 8 bytes)}] \mathbin{\Vert} [\text{Bytes } 10...: \text{Dữ liệu âm thanh PCM}]$
+##### 1. Quy trình đồng bộ hóa dòng thời gian
+Khi ứng dụng máy khách ghi âm từ Micro vật lý hoặc card âm thanh hệ thống (WASAPI Loopback), luồng âm thanh PCM được chia cắt thành các phân đoạn ngắn (chunk) 200ms. Để đo đạc chính xác độ trễ tích lũy chặng mạng và chặng xử lý mà không bị ảnh hưởng bởi sự lệch múi giờ giữa client và server, quy trình đồng bộ hóa dòng thời gian được thiết lập như sau:
+1.  **Gắn nhãn thời gian tại nguồn (Client-side Timestamping):** Trước khi gửi mỗi chunk âm thanh đi qua kênh WebSocket, máy khách ghi nhận một nhãn thời gian có độ chính xác cao $t_{client\_send}$ (độ chính xác micro-giây). Nhãn thời gian này được đóng gói trực tiếp vào phần đầu (header) của gói tin truyền phát.
+2.  **Đo đạc telemetry trên máy chủ:** Khi máy chủ nhận được gói tin, nó ghi nhận nhãn thời gian $t_{server\_recv}$. Khi quá trình suy luận nhận dạng (STT) hoặc dịch thuật (MT) hoàn tất, máy chủ trả về kết quả kèm theo chính xác nhãn thời gian gốc $t_{client\_send}$ và thời gian xử lý nội bộ của máy chủ $L_{proc\_server}$.
+3.  **Tính toán độ trễ mạng hai chiều (RTT Latency):** Phía máy khách khi nhận được kết quả cuối cùng từ WebSocket sẽ đối chiếu thời điểm hiện tại $t_{client\_recv}$ với nhãn thời gian gốc để xác định tổng trễ chặng mạng $L_{network}$ và trễ suy luận thực tế:
+    $$L_{network} = (t_{client\_recv} - t_{client\_send}) - L_{proc\_server}$$
+    Chỉ số này được đẩy về module telemetry `pipeline.metric` của máy khách để thống kê hiệu năng hệ thống theo thời gian thực.
 
-Trong đó, `Route ID` là byte định danh kênh dịch thuật (giá trị `0` đại diện cho luồng dịch xuôi và `1` đại diện cho luồng dịch ngược). Nhãn thời gian $t_{client\_send}$ ghi nhận chính xác thời điểm gửi gói tin phía client để phục vụ tính toán độ trễ mạng chặng mạng.
-
-##### 2. Khung điều khiển (JSON Frame)
-Các gói tin văn bản, trạng thái và telemetry được biểu diễn dưới dạng JSON:
-*   `stt.interim` / `stt.final`: Trả kết quả văn bản gốc tạm thời (interim) hoặc chính thức (final) kèm theo các trường định danh `segment_id`, `route_id`, và độ tin cậy `confidence`.
-*   `mt.result`: Trả kết quả văn bản dịch thuật sau khi hoàn tất chặng dịch máy NMT.
-*   `tts.result`: Trả metadata đồng bộ chặng phát âm thanh, chứa cấu trúc `streaming_hook` định vị thứ tự phân đoạn (`chunk_index` / `chunk_count`) giúp máy khách quản lý hàng đợi phát âm thanh cuốn chiếu liên tục.
+##### 2. Quy trình phối hợp luồng dữ liệu (Data Coordination Flow)
+Để tránh tình trạng chồng chéo dữ liệu văn bản hiển thị khi người dùng nói liên tục, hệ thống áp dụng cơ chế đánh chỉ số phân đoạn (`segment_id`) và nhãn phân tuyến (`route_id`):
+*   **Phân tuyến luồng dịch:** Byte định danh `Route ID` (giá trị `0` cho luồng dịch xuôi và `1` cho luồng dịch ngược) giúp bộ định tuyến của máy chủ phân phối dữ liệu âm thanh đến đúng luồng quản lý độc lập, ngăn ngừa sự lẫn lộn giữa tiếng nói của người dùng nội bộ và đối tác nước ngoài.
+*   **Đồng bộ hóa kết quả tạm thời (Interim) và chính thức (Final):** Trong khi người nói đang nói, chặng STT liên tục cập nhật kết quả tạm thời dựa trên cùng một `segment_id`. Khi VAD kích hoạt tín hiệu kết thúc câu thoại, máy chủ gửi gói tin đánh dấu trạng thái chính thức (`stt.final`). Cơ chế này giúp giao diện máy khách hiển thị văn bản cập nhật cuốn chiếu (chèn đè nội dung tạm thời) và chỉ khóa dữ liệu khi nhận được tín hiệu chính thức, đảm bảo tính trực quan và chính xác cho giao diện người dùng.
 
 #### 3.1.3. Cơ chế định tuyến bất đồng bộ Mode-Dispatch và Quản lý Session State
 
-Tại Server FastAPI, mỗi phiên kết nối của người dùng được đại diện bằng một thực thể quản lý duy nhất mang tên `SessionState`. Cơ chế định tuyến bất đồng bộ **Mode-Dispatch** đọc tiêu đề nhị phân của khung truyền đầu vào, phân tích `Route ID` để truy xuất cấu hình ngôn ngữ tương ứng, sau đó chuyển hướng chunk âm thanh đến bộ quản lý tuyến `StreamingSTTSessionManager`.
+Quy trình quản lý phiên dịch thuật tại máy chủ FastAPI được vận hành thông qua lớp đối tượng `SessionState`. Lớp này hoạt động như một kho lưu trữ trạng thái bất đồng bộ của kết nối WebSocket hiện hành, lưu giữ thông tin cấu hình ngôn ngữ, bộ đệm âm thanh tạm thời và hàng đợi kết quả đầu ra (`outbound_queue`).
 
-Hệ thống điều phối Server được tối ưu hóa sâu thông qua ba thiết kế kỹ nghệ phần mềm cốt lõi:
-1.  **Polymorphic Facade Pattern:** Cả ba chặng động cơ AI (`STTEngine`, `MTEngine`, `TTSEngine`) đều kế thừa từ một giao ước Contract chung, sử dụng các facade bất đồng bộ như `load_async()` và `infer_async()`. Thiết kế này đồng bộ hóa lên tới **85% cấu trúc giao tiếp**, cho phép hệ thống cắm-và-chạy (Plug-and-play) và chuyển đổi linh hoạt giữa các mô hình AI khác nhau.
-2.  **Bộ quản lý luồng song song Execution Lane:** GPU Tesla T4 có dung lượng VRAM giới hạn (16GB), dễ bị crash CUDA OOM nếu nhiều luồng cùng gọi suy luận song song. Để giải quyết, Server triển khai các `ExecutionLane`. Mỗi thực thể mô hình trong bể chứa được bảo vệ bởi một khóa loại trừ tương hỗ (`operation_lock`). Khi suy luận, tác vụ được nạp vào Thread Pool chuyên biệt và tuần tự hóa (serialization) qua khóa này, ngăn ngừa triệt để hiện tượng tranh chấp tài nguyên CUDA.
-3.  **Cơ chế khởi động nóng Preload & Warmup:** Server thực hiện tải trước (preload) các mô hình nền tảng vào GPU và chạy suy luận giả lập (warmup) với dữ liệu rỗng ngay khi khởi chạy máy chủ FastAPI (sự kiện `startup`). Điều này giúp loại bỏ hoàn toàn độ trễ khởi động lạnh lần đầu từ 15-20 giây đưa về mức trễ vận hành thực tế dưới 1.0 giây.
+Quy trình định tuyến và quản lý tài nguyên tính toán trên máy chủ được thiết kế theo 3 cấu trúc kỹ nghệ cốt lõi nhằm tối ưu hóa hiệu năng suy luận:
+
+##### 1. Thiết kế Facade đa hình (Polymorphic Facade Pattern)
+Để chuẩn hóa giao tiếp giữa luồng xử lý WebSocket và các mô hình học sâu bên dưới, cả ba chặng STT, MT, và TTS đều được bao bọc bởi các lớp Facade kế thừa từ một giao ước chung (Contract). Quy trình suy luận được thực hiện qua các phương thức bất đồng bộ `load_async()` và `infer_async()`. Cách tiếp cận này giúp cô lập logic xử lý luồng khỏi chi tiết cài đặt của từng thư viện (như Faster-Whisper hay PhoWhisper), cho phép cắm-và-chạy (Plug-and-play) các mô hình AI khác nhau mà không phải thay đổi cấu trúc lõi của server.
+
+##### 2. Bộ điều phối luồng song song (Execution Lane Flow)
+GPU NVIDIA Tesla T4 có dung lượng VRAM giới hạn và không hỗ trợ thực thi đồng thời nhiều tác vụ tính toán ma trận lớn từ nhiều luồng PyTorch khác nhau mà không bị suy giảm hiệu năng hoặc lỗi tràn bộ nhớ (CUDA OOM). Quy trình xử lý song song được thiết kế như sau:
+*   Hệ thống thiết lập các tuyến thực thi độc lập (`ExecutionLane`) tương ứng với từng tác vụ STT, MT, TTS.
+*   Mỗi thực thể mô hình trong lane được bảo vệ bởi một khóa loại trừ tương hỗ (`operation_lock`).
+*   Khi có chunk âm thanh hoặc văn bản cần xử lý, tác vụ được nạp vào một Thread Pool chuyên biệt của Python và phải xếp hàng chờ nhận khóa `operation_lock`.
+*   Quy trình này tuần tự hóa việc truy cập vào GPU VRAM, ngăn chặn hiện tượng tranh chấp tài nguyên tính toán của card đồ họa, bảo vệ tính ổn định của server khi xử lý đa luồng.
+
+##### 3. Quy trình Khởi động nóng (Preload & Warmup Workflow)
+Để giải quyết độ trễ khởi động lạnh (cold-start latency) lên tới 15 - 20 giây ở lần suy luận đầu tiên (do mô hình cần thời gian nạp các tensor từ ổ đĩa vào VRAM và khởi tạo nhân CUDA), hệ thống áp dụng quy trình khởi động nóng tại sự kiện `startup` của FastAPI:
+1.  **Tải trước (Preload):** Nạp toàn bộ các mô hình (PhoWhisper, Faster-Whisper, NLLB-200, các voice của Piper TTS) vào bộ nhớ VRAM ngay khi máy chủ bắt đầu chạy.
+2.  **Chạy giả lập (Warmup):** Gửi các tensor rỗng (zeros tensor) hoặc chuỗi văn bản giả định qua các facade `infer_async()` để ép GPU khởi tạo sẵn các đồ thị tính toán (execution graphs) và nhân CUDA.
+3.  **Sẵn sàng vận hành:** Sau khi hoàn tất quá trình khởi động nóng, hệ thống mới mở cổng WebSocket tiếp nhận kết nối từ client. Toàn bộ các yêu cầu dịch thuật đầu tiên của người dùng sẽ đạt được tốc độ suy luận tối ưu ngay lập tức.
 
 ---
 
 ### 3.2. Nhận dạng Tiếng nói Streaming và Trực quan hóa Văn bản (Bài toán 1)
 
-#### 3.2.1. Phân đoạn giọng nói động Silero VAD và Hangover Frame
+#### 3.2.1. Quy trình phân đoạn giọng nói động Silero VAD và Hangover Frame
 
-Nhận dạng tiếng nói streaming đòi hỏi phải cắt nhỏ luồng âm thanh liên tục thành các câu đơn có nghĩa để đưa vào mô hình nhận dạng mà không làm đứt quãng dòng suy nghĩ của người nói. Hệ thống sử dụng mô hình mạng thần kinh nhân tạo siêu nhẹ **Silero VAD** chạy bất đồng bộ để phân đoạn giọng nói đầu vào:
+Nhận dạng tiếng nói streaming trên luồng âm thanh liên tục yêu cầu một cơ chế phân đoạn thông minh để xác định chính xác thời điểm bắt đầu và kết thúc câu nói của người dùng, làm cơ sở nạp dữ liệu vào mô hình nhận dạng. Quy trình xử lý tín hiệu âm thanh thô qua bộ lọc hoạt động giọng nói (Voice Activity Detection - VAD) được thiết kế như sau:
 
-##### 1. Ngưỡng im lặng Sweet Spot
-Thời gian im lặng liên tục để trigger kết thúc câu (`stt.final`) được xác định qua tham số `SILENCE_THRESHOLD_FRAMES`. Qua các thực nghiệm tối ưu, giá trị này được cấu hình ở mức **2.25 khung** (tương đương với $2.25 \times 200\text{ms} = 450\text{ms}$):
-*   Nếu đặt dưới 400ms, hệ thống sẽ cắt câu quá nhanh khi người nói tạm dừng lấy hơi ngắn, làm câu nói bị xé vụn dẫn đến mất ngữ cảnh nghiêm trọng ở tầng dịch máy.
-*   Nếu đặt trên 500ms, độ trễ phản hồi tổng cộng sẽ tăng lên rõ rệt. Ngưỡng **450ms** là điểm ngọt ngào tối ưu, vừa giữ được sự liền mạch của câu thoại vừa kích hoạt lệnh dịch tức thời khi người nói dứt câu.
+```
+[Audio Chunk 200ms] ──> [Chuẩn hóa biên độ] ──> [Suy luận Silero VAD]
+                                                         │
+                                        ┌────────────────┴────────────────┐
+                                        ▼ P_speech > 0.5                  ▼ P_speech <= 0.5
+                                 [Trạng thái SPEECH]               [Trạng thái SILENCE]
+                                        │                                 │
+                                [Nạp vào bộ đệm câu]             [Đếm khung im lặng]
+                                                                          │
+                                                         ┌────────────────┴────────────────┐
+                                                         ▼ Khung lặng < Threshold          ▼ Khung lặng >= Threshold (450ms)
+                                                  [Tiếp tục ghi nhận]               [Trigger stt.final & Gửi đi]
+                                                                                    [Ghép thêm 2 Hangover Frames]
+```
 
-##### 2. Cơ chế Hangover Frame
-Để tránh hiện tượng mất các phụ âm cuối hoặc âm gió ở từ cuối cùng của câu nói (các âm như /s/, /t/, /z/ thường có năng lượng âm học rất yếu, dễ bị mô hình VAD nhận diện nhầm là khoảng lặng), hệ thống áp dụng cơ chế **Hangover Frame** với giá trị `HANGOVER_FRAMES = 2` (tương đương 400ms). Khi VAD phát hiện chuyển trạng thái từ tiếng nói sang im lặng, hệ thống tiếp tục giữ lại và ghép thêm 2 khung âm thanh im lặng tiếp theo vào bộ đệm của câu hiện tại, đảm bảo bảo toàn toàn vẹn đặc trưng âm phổ chặng cuối trước khi gửi đến Whisper.
+##### 1. Quy trình phân lớp trạng thái âm thanh
+Tín hiệu âm thanh PCM 16kHz ghi nhận từ máy khách được đưa vào mô hình mạng thần kinh nhân tạo siêu nhẹ **Silero VAD** theo từng chu kỳ 200ms. Mô hình tính toán xác suất có chứa tiếng nói $P_{speech}$ trong đoạn âm thanh:
+*   Nếu $P_{speech} > \theta_{VAD}$ (với ngưỡng kích hoạt $\theta_{VAD} = 0.5$), phân đoạn được gắn nhãn là hoạt động tiếng nói (`SPEECH`). Hệ thống bắt đầu đẩy dữ liệu âm thanh vào bộ đệm của phân đoạn hiện tại.
+*   Nếu $P_{speech} \le \theta_{VAD}$, phân đoạn được gắn nhãn là khoảng lặng (`SILENCE`). Hệ thống tăng biến đếm số khung im lặng liên tục.
 
-#### 3.2.2. Nhận dạng tiếng nói bất đồng bộ và cơ chế đệm trượt ngữ cảnh
+##### 2. Thuật toán cắt câu động điểm ngọt ngào (Sweet Spot VAD)
+Để xác định thời điểm người nói kết thúc câu thoại thực tế nhằm phát lệnh dịch, hệ thống sử dụng hằng số cấu hình `SILENCE_THRESHOLD_FRAMES`. Qua các thực nghiệm tối ưu hóa trải nghiệm hội thoại, giá trị này được calibrate ở mức **2.25 khung** (tương đương với $2.25 \times 200\text{ms} = 450\text{ms}$):
+*   Khi biến đếm khung im lặng vượt qua ngưỡng 450ms, hệ thống sẽ trigger trạng thái kết thúc câu (`stt.final`), đóng bộ đệm âm thanh hiện tại và gửi toàn bộ phân đoạn sang mô hình STT để nhận dạng chính thức.
+*   Ngưỡng **450ms** được lựa chọn làm "điểm ngọt ngào" vì nó phản ánh chính xác khoảng dừng lấy hơi tự nhiên của người Việt giữa các câu nói độc lập. Nếu đặt quá ngắn (<400ms), câu nói sẽ bị băm nhỏ; nếu đặt quá dài (>500ms), trễ phản hồi của hệ thống sẽ tăng lên rõ rệt gây cảm giác gián đoạn.
 
-Sau khi một câu nói được phân đoạn thành công bởi bộ lọc VAD, dữ liệu âm thanh được gửi trực tiếp đến động cơ nhận dạng tiếng nói bất đồng bộ (`STTEngine`). Để đảm bảo độ trễ thấp và độ chính xác cao cho từng ngôn ngữ, hệ thống sử dụng **Faster-Whisper** cho luồng nhận dạng tiếng Anh và **PhoWhisper-medium-ct2** được tinh chỉnh chuyên biệt cho tiếng Việt.
+##### 3. Quy trình bù khung âm thanh (Hangover Frame Workflow)
+Để giải quyết bài toán mất phụ âm cuối (tail consonant drop) do năng lượng âm học của các phụ âm gió ở cuối câu nói (như /s/, /t/, /z/) thường giảm xuống rất thấp khiến bộ lọc VAD hiểu lầm là khoảng lặng và cắt bỏ sớm, hệ thống áp dụng cơ chế bù khung **Hangover Frame**:
+*   Khi bộ đếm im lặng đạt ngưỡng trigger kết thúc câu, hệ thống không cắt bỏ phân đoạn âm thanh tại đúng thời điểm đó.
+*   Hệ thống tiếp tục giữ lại và trích xuất thêm `HANGOVER_FRAMES = 2` khung âm thanh tiếp theo (tương đương 400ms âm thanh tĩnh) để ghép nối vào đuôi của bộ đệm âm thanh hiện tại.
+*   Toàn bộ phân đoạn âm thanh mở rộng này mới được chuyển giao cho mô hình Whisper nhận dạng. Cơ chế này đảm bảo bảo toàn toàn vẹn đặc trưng âm phổ chặng cuối của từ cuối cùng trong câu thoại, giúp nâng cao độ chính xác nhận dạng STT.
 
-Thách thức lớn nhất của nhận dạng giọng nói dạng streaming là mất ngữ nghĩa liên tục khi bộ đệm âm thanh bị giải phóng sau mỗi câu thoại chính thức (`stt.final`). Hệ thống khắc phục bằng cơ chế **Đệm trượt ngữ cảnh (Contextual Prompts)**:
-*   Mỗi khi một phân đoạn câu thoại hoàn thành, văn bản kết quả được lưu vào bộ đệm trượt `_last_final_text` (lên đến tối đa `LAST_FINAL_TEXT_MAX_CHARS = 1000` ký tự).
-*   Khi bắt đầu nhận dạng phân đoạn tiếp theo, hệ thống trích xuất khoảng 150 token cuối cùng (`INITIAL_PROMPT_MAX_CHARS = 500` ký tự) để nạp ngược lại vào mô hình STT dưới dạng tham số gợi ý âm học (`initial_prompt`).
-*   Để ngăn ngừa mô hình rơi vào vòng lặp ảo giác (hallucination loop) do tự hồi quy ngữ cảnh quá mức, tham số `condition_on_previous_text` được cấu hình cố định ở mức `False`. Cơ chế này cải thiện độ chính xác nhận dạng đối với các danh từ riêng, thuật ngữ chuyên ngành viết tắt xuyên suốt buổi họp.
+#### 3.2.2. Quy trình nhận dạng tiếng nói bất đồng bộ và cơ chế đệm trượt ngữ cảnh
+
+Sau khi phân đoạn âm thanh được tạo ra bởi bộ lọc VAD, quy trình nhận dạng tiếng nói được kích hoạt bất đồng bộ trên máy chủ thông qua lớp facade `STTEngine`. Hệ thống áp dụng **Faster-Whisper** cho luồng nhận dạng tiếng Anh và mô hình **PhoWhisper-medium-ct2** lượng tử hóa cho luồng tiếng Việt để đạt độ chính xác tối ưu cho từng ngôn ngữ mục tiêu.
+
+Quy trình nhận dạng tiếng nói và đồng bộ ngữ cảnh được mô tả qua các bước sau:
+
+##### 1. Quy trình suy luận nhận dạng
+*   **Tiền xử lý phổ âm:** Đoạn âm thanh PCM thô nhận được từ WebSocket được chuyển đổi sang đặc trưng Log-Mel Spectrogram với 80 kênh tần số.
+*   **Suy luận Encoder-Decoder:** Log-Mel Spectrogram được đưa qua các lớp tích chập của Encoder để nén chiều thời gian, sau đó Decoder tự hồi quy thực hiện chú ý chéo (Cross-Attention) để sinh ra chuỗi ký tự văn bản nguồn.
+
+##### 2. Quy trình đệm trượt ngữ cảnh (Contextual Prompt Workflow)
+Do bộ đệm âm thanh của mô hình STT bắt buộc phải giải phóng sau mỗi lần trigger câu thoại chính thức (`stt.final`) để giải tỏa bộ nhớ và ngăn trễ tích lũy, mô hình STT sẽ bị mất ngữ cảnh của các câu đã nói trước đó. Để khắc phục hiện trạng này, hệ thống thiết lập quy trình đệm trượt ngữ cảnh bất đồng bộ:
+1.  **Lưu trữ văn bản lịch sử:** Mỗi khi chặng STT xuất ra một văn bản chính thức hoàn chỉnh, văn bản này được lưu vào một bộ đệm trượt lịch sử `_last_final_text` của phiên kết nối (giới hạn dung lượng tối đa `LAST_FINAL_TEXT_MAX_CHARS = 1000` ký tự).
+2.  **Trích xuất gợi ý âm học (Prompt Extraction):** Khi bắt đầu nhận dạng phân đoạn âm thanh tiếp theo, hệ thống trích xuất khoảng 150 ký tự cuối cùng từ bộ đệm trượt (`INITIAL_PROMPT_MAX_CHARS = 500` ký tự) để làm văn bản gợi ý.
+3.  **Nạp tham số suy luận:** Văn bản gợi ý này được nạp ngược lại vào mô hình Faster-Whisper thông qua tham số `initial_prompt`.
+4.  **Cô lập tự hồi quy:** Để ngăn chặn mô hình bị rơi vào vòng lặp ảo giác hoặc lặp từ vô hạn (hallucination loop) do ảnh hưởng từ các câu cũ, tham số `condition_on_previous_text` được cấu hình cố định ở mức `False`. Quy trình này giúp mô hình nhận dạng chính xác các danh từ riêng, từ viết tắt chuyên ngành xuất hiện lặp lại xuyên suốt buổi họp mà không làm tăng độ trễ tính toán.
 
 ---
 
 ### 3.3. Dịch máy Hội thoại và Bộ đệm Xử lý Thời gian thực (Bài toán 2)
 
-#### 3.3.1. Giải thuật đệm dịch ngắn (Short-MT buffering) nâng cao ngữ nghĩa
+#### 3.3.1. Quy trình đệm dịch ngắn (Short-MT buffering) nâng cao ngữ nghĩa
 
-Văn bản nhận dạng từ chặng STT thường được trả về dưới dạng các cụm từ ngắn do thói quen ngắt nhịp tự nhiên của người nói. Nếu đưa trực tiếp các cụm từ này (ví dụ: *"I think"* hoặc *"we should"*) vào động cơ dịch máy NLLB-200, kết quả dịch thu được sẽ mang tính chất dịch thô từng từ (literal translation), rời rạc và hoàn toàn sai cấu trúc ngữ pháp tự nhiên của ngôn ngữ đích.
+Khi văn bản nguồn được nhận dạng hoàn tất từ chặng STT, nó được đẩy trực tiếp sang chặng dịch máy thần kinh (NMT) thông qua facade `MTEngine` sử dụng mô hình đa ngôn ngữ **NLLB-200** tối ưu hóa bằng thư viện CTranslate2. 
 
-Để nâng cao tính tự nhiên ngữ nghĩa, hệ thống triển khai giải thuật **Đệm dịch ngắn (Short-MT Buffering)**:
-*   Hệ thống quy định một ngưỡng độ dài từ tối thiểu thông qua hằng số cấu hình `MIN_MT_WORDS_FOR_TTS = 4` từ.
-*   Khi kết quả dịch máy chặng MT trả về có độ dài nhỏ hơn 4 từ, hệ thống sẽ tạm hoãn việc kích hoạt chặng TTS, giữ văn bản này lại trong bộ đệm trượt bất đồng bộ `_pending_mt_text`.
-*   Khi câu tiếp theo được dịch xong, văn bản mới sẽ được ghép nối tiếp vào bộ đệm pending để tạo thành một vế câu có cấu trúc hoàn chỉnh và giàu ngữ nghĩa hơn trước khi gửi đến TTS suy luận, giúp cải thiện ngữ điệu và tính liên kết của câu nói tổng hợp.
+Do ngôn ngữ hội thoại thực tế thường có nhiều câu ngắn hoặc cụm từ ngắt quãng do thói quen nói ngắt nhịp của người dùng, nếu hệ thống dịch ngay lập tức mọi cụm từ đơn lẻ, bản dịch thu được sẽ bị rời rạc, sai lệch cấu trúc ngữ pháp và nghe rất giật cục khi đưa sang chặng TTS tiếp theo. Quy trình đệm dịch ngắn (Short-MT Buffering) được thiết kế để giải quyết bài toán này:
 
-#### 3.3.2. Cơ chế giám sát Watchdog flush giải phóng hàng đợi dịch thuật
+```
+[STT Text Output] ──> [Tính số lượng từ]
+                             │
+            ┌────────────────┴────────────────┐
+            ▼ Số từ < 4                       ▼ Số từ >= 4
+     [Nạp vào bộ đệm pending]           [Ghép với bộ đệm cũ (nếu có)]
+     [Hoãn kích hoạt TTS]               [Gửi sang NLLB-200 dịch thuật]
+                                              │
+                                              ▼
+                                    [Trả kết quả mt.result]
+                                    [Kích hoạt chặng TTS]
+```
 
-Việc đệm dịch ngắn nhằm tối ưu hóa ngữ nghĩa lại tạo ra mâu thuẫn trực tiếp với yêu cầu tối ưu hóa độ trễ thời gian thực. Nếu người nói dừng lại hoặc kết thúc cuộc đối thoại mà không nói thêm câu nào nữa, đoạn văn bản nằm trong bộ đệm pending sẽ bị kẹt lại vĩnh viễn, khiến người nghe không nhận được âm thanh chặng cuối.
+1.  **Đánh giá độ dài văn bản nguồn:** Khi nhận được chuỗi văn bản từ STT, hệ thống đếm số từ của chuỗi đầu vào.
+2.  **Quyết định trì hoãn (Buffering Decision):** Hệ thống so sánh số từ với hằng số cấu hình `MIN_MT_WORDS_FOR_TTS = 4` từ:
+    *   Nếu chiều dài câu nhỏ hơn 4 từ, hệ thống sẽ tạm hoãn việc gọi suy luận dịch máy và tổng hợp TTS. Văn bản này được lưu tạm vào bộ đệm trượt bất đồng bộ `_pending_mt_text`.
+    *   Nếu chiều dài câu bằng hoặc lớn hơn 4 từ, hệ thống sẽ lấy toàn bộ văn bản đang lưu trong bộ đệm pending ghép nối tiếp với văn bản mới để tạo thành một vế câu hoàn chỉnh ngữ nghĩa.
+3.  **Dịch máy ngữ cảnh:** Toàn bộ chuỗi văn bản ghép được gửi đến mô hình NLLB-200 để thực hiện dịch thuật sang ngôn ngữ đích. Kết quả dịch thu được có cấu trúc ngữ pháp trọn vẹn, giúp chặng tổng hợp giọng nói TTS tiếp theo có đủ thông tin để tạo ra âm phổ tự nhiên.
 
-Để giải quyết vấn đề này, hệ thống tích hợp cơ chế giám sát thời gian thực **Watchdog Timer**:
-*   Một tiến trình giám sát được tích hợp trực tiếp vào vòng lặp xử lý âm thanh đầu vào (chu kỳ quét 200ms).
-*   Nếu bộ đệm pending đang lưu giữ văn bản và khoảng lặng kéo dài vượt quá ngưỡng thời gian `PENDING_MT_TIMEOUT_S = 3.0` giây, bộ giám sát sẽ kích hoạt tín hiệu xả cưỡng bức (Force Flush).
-*   Toàn bộ văn bản dịch đang kẹt trong bộ đệm sẽ được giải phóng lập tức và đẩy thẳng đến động cơ TTS để phát âm thanh ra máy khách. Cơ chế này đảm bảo sự liền mạch tuyệt đối của thông tin hội thoại mà không làm gia tăng độ trễ không cần thiết.
+#### 3.3.2. Quy trình giám sát Watchdog flush giải phóng hàng đợi dịch thuật
+
+Việc trì hoãn dịch các câu ngắn để cải thiện ngữ nghĩa lại tạo ra mâu thuẫn trực tiếp với yêu cầu tối ưu hóa độ trễ thời gian thực của hệ thống S2ST. Nếu người nói kết thúc câu nói ngắn của họ và dừng lại hoàn toàn, vế câu ngắn đó sẽ bị kẹt lại trong bộ đệm pending vĩnh viễn, khiến đối tác bên kia cuộc họp không thể nghe được nội dung dịch chặng cuối.
+
+Để giải quyết mâu thuẫn này, hệ thống thiết lập một quy trình giám sát tự động **Watchdog Timer** hoạt động song song trong luồng xử lý WebSocket:
+
+1.  **Giám sát thời gian im lặng:** Hệ thống tích hợp một vòng lặp giám sát bất đồng bộ (chạy với chu kỳ quét 200ms) để theo dõi thời điểm nhận gói tin cuối cùng của phiên kết nối.
+2.  **Kiểm tra điều kiện kích hoạt:** Bộ giám sát liên tục kiểm tra hai điều kiện:
+    *   Bộ đệm `_pending_mt_text` hiện tại đang có dữ liệu chờ dịch.
+    *   Khoảng thời gian im lặng từ gói tin âm thanh cuối cùng gửi lên đã vượt quá ngưỡng cấu hình `PENDING_MT_TIMEOUT_S = 3.0` giây.
+3.  **Kích hoạt xả bộ đệm cưỡng bức (Force Flush):** Khi cả hai điều kiện trên được thỏa mãn, Watchdog Timer sẽ phát tín hiệu xả bộ đệm. Hệ thống ngay lập tức rút toàn bộ văn bản đang bị kẹt trong bộ đệm pending, bỏ qua điều kiện độ dài từ tối thiểu, gửi trực tiếp sang mô hình NLLB-200 dịch thuật và đẩy thẳng kết quả dịch đến chặng TTS để sinh âm thanh phát ra loa của người nghe. Quy trình này bảo toàn độ trễ nhận thức đầu ra tối đa không vượt quá 3.0 giây trong các khoảng tạm nghỉ hội thoại.
 
 ---
 
 ### 3.4. Thực nghiệm Huấn luyện và Đánh giá Mô hình Piper TTS (Bài toán 3)
 
-#### 3.4.1. Tiền xử lý dữ liệu và Kiểm soát chất lượng căn chỉnh (STT QC)
+#### 3.4.1. Thiết kế quy trình xây dựng và làm sạch dữ liệu huấn luyện
 
-Mô hình Piper TTS giọng nam Việt được huấn luyện trên một tập dữ liệu con sạch được khai thác từ bộ dữ liệu public `VieNeu-TTS-140h`. Quy trình chuẩn bị dữ liệu trải qua hai chặng kiểm soát nghiêm ngặt:
+Để huấn luyện thành công mô hình Piper TTS giọng nam miền Nam Việt từ tập dữ liệu công khai `VieNeu-TTS-140h`, hệ thống thiết lập một quy trình tiền xử lý dữ liệu tự động và kiểm soát chất lượng căn chỉnh chéo văn bản (STT QC). Quy trình này bao gồm các bước cụ thể sau:
 
-##### 1. Đánh giá chất lượng căn chỉnh chéo (STT QC)
-Thử nghiệm nghe thủ công phát hiện dữ liệu gốc của VieNeu bị lỗi tráo đổi văn bản giữa các file âm thanh liền kề (offset error). Để giải quyết triệt để, đồ án xây dựng quy trình tự động hóa kiểm soát chất lượng bằng mô hình **PhoWhisper-large**:
-*   Toàn bộ 1999 clips WAV (đã được resample về 22.05kHz mono, trim khoảng lặng và chuẩn hóa độ to -23 LUFS) được đưa vào mô hình PhoWhisper-large để nhận dạng ngược lại thành văn bản (Transcribe).
-*   Văn bản gốc (Reference) và văn bản nhận dạng ngược (Hypothesis) được đưa qua cùng một hàm chuẩn hóa đối xứng (norm_text) để loại bỏ dấu câu và chữ hoa/thường, đảm bảo tính nhất quán của dữ liệu.
-*   Chương trình tính toán tỷ lệ lỗi từ (Word Error Rate - WER) cho từng clip. Phân tích phân phối WER cho thấy dạng phân bố lưỡng cực (**Bimodal Distribution**): một cụm tập trung cực sạch ở mức WER gần 0 (median WER = 0.038) và một cụm lệch pha hoàn toàn ở mức WER gần 1.0.
-*   Phân tích sâu WER theo từng Speaker (người nói) cho thấy tỷ lệ lỗi không phân bổ ngẫu nhiên mà tập trung nghiêm trọng ở speaker `_0004` (lên tới 47.5% drop rate), trong khi speaker `_0032` cực kỳ sạch (0.2% drop rate). Từ đó, đồ án đề xuất bộ lọc lai **Per-speaker Hybrid Filter**: chỉ giữ lại lớp `keep` (WER < 0.15) đối với speaker `_0004`, và giữ lớp `keep + warn` đối với speaker `_0013` và `_0032`. Kết quả lọc thu được tập dữ liệu sạch hoàn hảo gồm **1500 clips** (tương đương ~2.5 giờ âm thanh studio chất lượng cao).
+```mermaid
+graph TD
+    A[Dataset VieNeu gốc: 1999 Clips] --> B[Tiền xử lý âm thanh cơ bản]
+    B --> B1[Resample về 22.05 kHz mono]
+    B --> B2[Chuẩn hóa độ to -23 LUFS]
+    B --> B3[Cắt khoảng lặng top_db=30]
+    B3 --> C[Kiểm định chất lượng chéo STT QC]
+    C --> C1[Transcribe ngược bằng PhoWhisper-large]
+    C1 --> C2[Tính WER đối xứng ref/hyp]
+    C2 --> D[Bộ lọc lai Per-Speaker Hybrid Filter]
+    D --> |Speaker _0004: keep chỉ khi WER < 0.15| E[Lớp lọc Strict: 409 clips]
+    D --> |Speaker _0013, _0032: keep + warn WER < 0.30| F[Lớp lọc Standard: 1091 clips]
+    E & F --> G[Tập dữ liệu sạch: 1500 clips ~2.5h]
+    G --> H[Chuẩn hóa văn bản bằng vinorm]
+    H --> I[Monkey-patch fake_imp cho Python 3.12+]
+```
 
-##### 2. Chuẩn hóa văn bản bằng vinorm
-Văn bản của 1500 clips này tiếp tục đi qua thư viện chuẩn hóa `vinorm` để chuyển đổi toàn bộ số, ngày tháng, và ký tự viết tắt sang dạng chữ viết tiếng Việt đầy đủ. Do Python 3.12 loại bỏ module thư viện chuẩn `imp`, đồ án đã chèn một bản vá khẩn cấp monkey-patch (fake_imp) vào hệ thống để duy trì tính tương thích hoạt động của thư viện chuẩn hóa cũ.
+##### 1. Tiền xử lý âm thanh cơ bản (Audio Preprocessing)
+Toàn bộ các tệp âm thanh WAV của các speaker giọng nam miền Nam được chuyển đổi định dạng tần số lấy mẫu về $22,050 \text{ Hz}$ (khớp với tần số của cấu hình mô hình Piper medium), chuyển đổi về kênh mono PCM 16-bit bằng thư viện `librosa`. Hệ thống chuẩn hóa độ to âm lượng về mức chuẩn $-23 \text{ LUFS}$ theo tiêu chuẩn phát thanh EBU R128 bằng thư viện `pyloudnorm`, đảm bảo mức năng lượng đồng đều trên toàn bộ tập dữ liệu huấn luyện. Thuật toán `librosa.effects.trim` với ngưỡng năng lượng $\theta_{\text{trim}} = 30 \text{ dB}$ được áp dụng để cắt bỏ khoảng lặng thừa ở hai đầu file âm thanh, tối ưu hóa quá trình học căn chỉnh âm phổ của mô hình.
 
-#### 3.4.2. Huấn luyện chuyển đổi giới tính giọng nói (Cross-Gender Fine-tuning)
+##### 2. Quy trình kiểm định chất lượng căn chỉnh chéo văn bản (STT QC Pipeline)
+Trải nghiệm thực tế phát hiện tập dữ liệu gốc `VieNeu-TTS-140h` gặp lỗi lệch offset dịch chuyển nhãn văn bản giữa các tệp âm thanh liền kề (offset error) trong quá trình cắt phân đoạn tự động của tác giả gốc. Điều này dẫn đến sự không khớp nghiêm trọng giữa văn bản ghi nhận và âm thanh thực tế. Để tự động phát hiện và loại bỏ các clips lỗi này, hệ thống thiết kế quy trình kiểm định chéo STT QC bằng mô hình học sâu **PhoWhisper-large** (1.55B tham số) chuyên biệt cho tiếng Việt:
+*   Mô hình PhoWhisper-large thực hiện nhận dạng ngược lại toàn bộ 1999 clips âm thanh thành văn bản nhận dạng tương ứng ($T_{\text{hyp}}$).
+*   Văn bản gốc ($T_{\text{ref}}$) và văn bản nhận dạng ngược ($T_{\text{hyp}}$) được xử lý thông qua cùng một hàm chuẩn hóa đối xứng (Symmetric Normalization Function) để loại bỏ toàn bộ dấu câu, ký tự đặc biệt, chuyển chuỗi về chữ thường và đồng bộ định dạng Unicode NFC, ngăn ngừa sai số giả tạo do định dạng viết hoa hoặc dấu câu khác nhau:
+    $$\text{Norm}(T) = \text{NormalizeWS}(\text{RemovePunct}(\text{ToLowerCase}(\text{ToNFC}(T))))$$
+*   Hệ thống tính toán chỉ số tỷ lệ lỗi từ (Word Error Rate - WER) giữa văn bản đối chiếu $T_{\text{ref\_norm}}$ và $T_{\text{hyp\_norm}}$:
+    $$\text{WER} = \frac{S + D + I}{N}$$
+    Trong đó $S, D, I$ lần lượt là số từ bị thay thế (Substitution), xóa (Deletion), và chèn thêm (Insertion); $N$ là tổng số từ trong văn bản đối chiếu.
+*   **Thiết lập các ngưỡng phân loại chất lượng clip:**
+    *   Lớp `keep` ($\text{WER} < 0.15$): Căn chỉnh sạch hoàn hảo, văn bản khớp hoàn toàn với âm thanh.
+    *   Lớp `warn` ($0.15 \le \text{WER} < 0.30$): Borderline, đa số là các câu chứa từ tiếng Anh hoặc chữ số phiên âm tiếng Việt (ví dụ: viết *"GPT-4"* nhưng PhoWhisper đọc ngược là *"gi pi ti bốn"*). Audio thực tế vẫn khớp với nội dung nguyên bản của câu.
+    *   Lớp `drop` ($\text{WER} \ge 0.30$): Mismatch thực tế, văn bản và âm thanh lệch hoàn toàn do lỗi offset.
+*   **Thiết kế bộ lọc lai Per-Speaker Hybrid Filter:** Phân tích thực nghiệm chỉ ra lỗi lệch offset không phân bố ngẫu nhiên toàn dataset mà tập trung rất nặng vào speaker `_0004` (lên tới 47.5% drop rate), trong khi speaker `_0032` cực kỳ sạch (chỉ 0.2% drop rate). Từ đó thiết lập quy tắc lọc lai:
+    *   Đối với Speaker chất lượng kém (`_0004`): Chỉ giữ lại các clip thuộc lớp `keep` (lọc nghiêm ngặt).
+    *   Đối với Speaker chất lượng tốt (`_0013` và `_0032`): Giữ lại các clip thuộc cả lớp `keep` và `warn` (lọc tiêu chuẩn).
+    *   Kết quả lọc thu được một tập dữ liệu đồng nhất gồm **1500 clips** (~2.5 giờ âm thanh chất lượng studio sạch hoàn toàn), được hiển thị qua biểu đồ WER phân bố lưỡng cực (Bimodal Distribution) trong thực nghiệm ở Chương 4.
 
-Với giới hạn dữ liệu huấn luyện (chỉ 2.5 giờ giọng nam sạch) và tài nguyên tính toán GPU Tesla T4, việc huấn luyện mô hình TTS từ đầu (train from scratch) là không khả thi. Đồ án đề xuất phương pháp **Cross-Gender Fine-tuning** (huấn luyện chuyển giới tính giọng nói) dựa trên kiến trúc nén VITS của mô hình Piper:
+##### 3. Chuẩn hóa văn bản học thuật bằng vinorm
+Văn bản của 1500 clips sạch này được đưa qua thư viện `vinorm` để chuyển đổi toàn bộ các chữ số (ví dụ: *"2026"* thành *"hai nghìn không trăm hai mươi sáu"*), ngày tháng và các ký tự viết tắt sang dạng chữ viết tiếng Việt đầy đủ phục vụ cho TTS phonemization. Do môi trường runtime Python 3.12+ loại bỏ hoàn toàn mô đun cũ `imp` khiến `vinorm` bị lỗi `ModuleNotFoundError`, đồ án thiết kế một bản vá khẩn cấp monkey-patch (`fake_imp`) vào hệ thống `sys.modules` để khôi phục lớp `imp` giả lập thông qua thư viện `importlib` tiêu chuẩn mới, đảm bảo tính tương thích và vận hành trơn tru của quy trình chuẩn hóa văn bản.
 
-*   **Kế thừa không gian nhúng âm vị:** Mô hình kế thừa toàn bộ cấu trúc mã hóa văn bản (Prior Text Encoder) và không gian nhúng âm vị gồm 154 âm vị tiếng Việt chuẩn của checkpoint giọng nữ `vi_VN-vais1000-medium` sẵn có trên HuggingFace.
-*   **Tinh chỉnh thích ứng đặc trưng giọng nam:** Trong quá trình huấn luyện, hệ thống đóng băng phần lớn không gian nhúng chữ viết và tập trung cập nhật các trọng số nhạy cảm âm học của khối Decoder cùng hệ thống đánh giá đối nghịch Discriminators (Multi-Period Discriminator - MPD, Multi-Scale Discriminator - MSD). Quá trình này bắt buộc mô hình phải dịch chuyển đặc trưng cao độ (F0) và formant từ giọng nữ miền Nam gốc sang giọng nam miền Nam tự nhiên, giúp mô hình hội tụ nhanh chóng chỉ sau 3000 epochs.
+#### 3.4.2. Thiết kế chiến lược Cross-Gender Fine-tuning trên kiến trúc VITS
+
+Để tối ưu hóa thời gian huấn luyện và chất lượng âm thanh trong điều kiện tài nguyên tính toán giới hạn trên GPU Google Colab T4, đồ án đề xuất quy trình huấn luyện **Cross-Gender Fine-tuning** (huấn luyện thích ứng chuyển đổi giới tính giọng đọc) dựa trên kiến trúc nén **VITS**:
+
+##### 1. Nguyên lý kiến trúc VITS áp dụng
+Kiến trúc VITS là một mô hình tổng hợp tiếng nói đầu-cuối (end-to-end) tích hợp mạng biến phân tự động điều kiện (Conditional VAE), hệ thống luồng chuẩn hóa (Normalizing Flows) và mạng đối nghịch tạo sinh (GAN) để sinh trực tiếp sóng âm từ văn bản.
+*   **Prior Text Encoder:** Ánh xạ chuỗi ký tự/âm vị đầu vào sang phân phối latent đại diện cho thông tin ngôn ngữ có điều kiện. Lớp nhúng âm vị (Phoneme Embeddings) đóng vai trò ánh xạ định danh âm vị sang vector biểu diễn đặc trưng ngôn ngữ.
+*   **Posterior Encoder:** Trích xuất các phân phối đặc trưng âm học $z$ từ mel-spectrogram của âm thanh gốc.
+*   **Normalizing Flows:** Thực hiện các phép biến đổi khả nghịch (Jacobian) để chuyển đổi phân phối đơn giản từ Text Encoder thành phân phối mel-spectrogram phức tạp của giọng đọc đích.
+*   **HiFi-GAN Decoder:** Giải mã vector không gian latent $z$ thành sóng âm vật lý (waveform) trực tiếp. Mô hình được huấn luyện đối nghịch cùng hệ thống Discriminators gồm Multi-Period Discriminator (MPD) và Multi-Scale Discriminator (MSD) để đánh giá tính tự nhiên và độ sắc nét âm phổ.
+
+##### 2. Chiến lược chuyển đổi giới tính giọng đọc (Female-to-Male Adaptation)
+Với lượng dữ liệu giọng nam thu được có giới hạn (~2.5 giờ) và tài nguyên tính toán giới hạn, việc huấn luyện từ đầu (train from scratch) sẽ dẫn đến chất lượng âm thanh kém, dễ bị méo tiếng và không hội tụ. Đồ án đề xuất giải pháp tinh chỉnh chuyển giới tính:
+*   **Kế thừa không gian nhúng âm vị:** Mô hình kế thừa toàn bộ cấu trúc Prior Text Encoder và bản đồ nhúng âm vị gồm 154 âm vị tiếng Việt chuẩn của mô hình giọng nữ gốc `vi_VN-vais1000-medium` đã được huấn luyện hơn 4769 epochs trên tập dữ liệu VAIS1000. Điều này giúp giữ vững khả năng phát âm chuẩn xác và ngắt nghỉ tự nhiên của tiếng Việt.
+*   **Đóng băng và tinh chỉnh chọn lọc:** Trong quá trình huấn luyện với dữ liệu giọng nam sạch, hệ thống đóng băng một phần cấu trúc Text Encoder để bảo toàn biểu diễn ngôn ngữ chuẩn. Tập trung cập nhật trọng số của khối **Normalizing Flows, Decoder (HiFi-GAN)** và các **Discriminators**. Quá trình huấn luyện đối nghịch buộc Decoder và Flows phải học cách dịch chuyển phân phối âm phổ, kéo dải formant và tần số cao độ cơ bản $F_0$ từ giọng nữ (khoảng 200 - 240 Hz) xuống giọng nam miền Nam tự nhiên (khoảng 100 - 140 Hz), tạo nên sắc âm ấm áp đặc trưng.
+
+##### 3. Thiết lập siêu tham số huấn luyện (Training Hyperparameters)
+*   **Tốc độ học tinh chỉnh tối ưu:** Thiết lập $LR_{\text{finetune}} = 1.0 \times 10^{-4}$ (giảm một nửa so với mức mặc định $2.0 \times 10^{-4}$ của Piper huấn luyện từ đầu để tránh phá vỡ không gian latent đã học và gây hiện tượng phân kỳ loss).
+*   **Batch size và Precision:** Cấu hình batch size 16 (tối ưu hóa bộ nhớ GPU VRAM 16GB trên Tesla T4) và độ chính xác tính toán FP32 để bảo vệ các phép toán log/exp phức tạp của Normalizing Flows tránh lỗi tràn số và sụp đổ chế độ (mode collapse).
+*   **Chu kỳ lưu checkpoint:** Lưu mỗi 10 epochs (giảm overhead I/O đồng bộ lên Drive).
+*   **Chiến lược Local I/O chống nghẽn mạng:** Quá trình đọc dữ liệu và tập tin cache `.pt` được thực hiện hoàn toàn trên SSD cục bộ của Colab (`/content/training_dir`) để loại bỏ hoàn toàn hiện tượng thắt nút cổ chai I/O qua Drive FUSE (random reads latency). Các tệp checkpoints và tệp nhật ký TensorBoard được ghi trực tiếp sang Google Drive đồng bộ để đảm bảo khả năng tự động khôi phục trạng thái (auto-resume) khi mất kết nối.
 
 #### 3.4.3. Giải pháp đồng bộ âm vị 2-Pass và vá mã nguồn PyTorch Lightning
 
-Quá trình tiền xử lý và huấn luyện Piper TTS đối mặt với hai rào cản kỹ thuật lớn và được khắc phục bằng các giải pháp tùy biến:
+Quá trình chuẩn bị dữ liệu và huấn luyện Piper TTS đối mặt với hai rào cản kỹ thuật lớn được giải quyết bằng các giải pháp tùy biến trực tiếp:
 
 ##### 1. Giải pháp đồng bộ âm vị 2-Pass Workaround
-Trình tiền xử lý `piper_train.preprocess` của phiên bản Piper hiện tại không hỗ trợ cấu hình bản đồ âm vị trực tiếp từ dòng lệnh. Khi chạy trên tập dữ liệu VieNeu có chứa một số từ tiếng Anh pha trộn, espeak-ng tự động sinh ra 3 âm vị lạ (`'X'`, `'g'`, `'ʦ'`), nâng tổng số âm vị lên 157 và gây lỗi sập chương trình `IndexError` khi nạp vào base model (chỉ hỗ trợ tối đa 154 âm vị). 
+Trình tiền xử lý `piper_train.preprocess` của phiên bản Piper hiện tại không hỗ trợ cấu hình bản đồ âm vị trực tiếp từ dòng lệnh. Khi chạy trên tập dữ liệu VieNeu có chứa một số từ tiếng Anh pha trộn (codeswitching), bộ grapheme-to-phoneme `espeak-ng` tự động sinh ra 3 âm vị ngoại lai (`'X'`, `'g'`, `'ʦ'`), nâng tổng số âm vị lên 157 và gây lỗi sập chương trình `IndexError` khi nạp vào base model (chỉ hỗ trợ tối đa 154 âm vị chuẩn).
 
-Đồ án thiết lập giải thuật tiền xử lý 2 bước:
-*   *Pass 1:* Chạy tiền xử lý trên thư mục trống để hệ thống tự phát hiện và tạo ra file cấu hình `config.json` thô chứa 157 âm vị.
-*   *Pass 2:* Ghi đè file `config.json` này bằng file cấu hình gốc của base model `vais1000-medium` (154 âm vị), sau đó chạy lại lệnh tiền xử lý. Do phát hiện file cấu hình đã tồn tại, Piper buộc phải sử dụng lại bản đồ 154 âm vị cũ, các âm vị lạ được tự động loại bỏ (drop) an toàn mà không phát sinh thêm chỉ số mới.
-*   *Khâu kiểm định 4-Checks:* Chạy tập lệnh kiểm tra tự động bao gồm kiểm tra giá trị ID lớn nhất thực tế xuất hiện trong `dataset.jsonl` (phải $\le 153$) và đối chiếu tra cứu ngược để đảm bảo an toàn tuyệt đối trước khi đưa vào PyTorch.
+Đồ án thiết lập giải thuật tiền xử lý 2 bước (2-Pass Workaround):
+*   **Pass 1 (Khảo sát âm vị):** Chạy trình tiền xử lý của Piper trên một thư mục trống để hệ thống tự động phát hiện và sinh tệp cấu hình `config.json` thô chứa đầy đủ 157 âm vị thực tế xuất hiện trong tập dữ liệu.
+*   **Pass 2 (Cưỡng bức đồng bộ):** Hệ thống thực hiện ghi đè tệp `config.json` thô này bằng tệp cấu hình âm vị chuẩn (chứa đúng 154 âm vị gốc của base model `vais1000-medium`), sau đó chạy lại lệnh tiền xử lý dữ liệu chính thức. Khi phát hiện tệp cấu hình đã tồn tại, trình tiền xử lý của Piper buộc phải sử dụng lại bản đồ 154 âm vị gốc, các âm vị lạ tự động bị loại bỏ (drop) hoặc ánh xạ về âm vị gần nhất mà không làm sập chương trình.
+*   **Quy trình kiểm tra 4-Checks (Four-stage Validation):** Trước khi đưa dữ liệu vào huấn luyện, hệ thống chạy một kịch bản kiểm tra tự động gồm 4 bước: (1) Quét toàn bộ tệp `dataset.jsonl` để tìm các ID âm vị lớn hơn 153; (2) Đối chiếu chéo từ điển âm vị; (3) Xác thực cấu trúc tensor đầu vào; (4) Chạy thử nghiệm suy luận 1 epoch để đảm bảo an toàn tuyệt đối cho PyTorch.
 
 ##### 2. Vá mã nguồn tối ưu tốc độ học
-Mặc định Piper train thiết lập tốc độ học $LR = 2 \times 10^{-4}$ cho huấn luyện từ đầu. Đối với fine-tuning dữ liệu nhỏ, tốc độ này quá lớn dễ gây phân kỳ loss. Đồ án áp dụng kỹ thuật vá mã nguồn trực tiếp bằng biểu thức chính quy (Regex Inline Patching) trong file cấu hình huấn luyện của thư viện PyTorch Lightning để ép tốc độ học về mức tối ưu $LR_{finetune} = 1.0 \times 10^{-4}$.
+Để cưỡng bức tốc độ học trong PyTorch Lightning khi bộ mã lệnh của Piper không hiển thị tham số này ra ngoài giao diện dòng lệnh, hệ thống áp dụng kỹ thuật vá mã nguồn trực tiếp bằng biểu thức chính quy (Regex Inline Patching). Kịch bản Python tự động tìm kiếm mẫu Regex `[12]e-0?4` trong tệp cấu hình huấn luyện `vits/lightning.py` trên máy chủ và ghi đè giá trị học mặc định `2e-4` thành tốc độ tinh chỉnh tối ưu $LR_{\text{finetune}} = 1.0 \times 10^{-4}$ một cách tự động và đảm bảo tính lặp lại an toàn (idempotency).
 
-#### 3.4.4. Thiết lập hệ thống đánh giá hiệu năng và chất lượng giọng nói
+#### 3.4.4. Thiết kế hệ thống đánh giá chất lượng và hiệu năng mô hình
 
-Để đánh giá khoa học và toàn diện mô hình Piper TTS giọng Nam Việt sau tinh chỉnh và lượng tử hóa (FP16 ONNX), đồ án thiết lập khung phương pháp đánh giá thực nghiệm đa chiều bao gồm:
+Để đánh giá khoa học và toàn diện mô hình Piper TTS giọng Nam Việt sau tinh chỉnh và lượng tử hóa, đồ án thiết lập khung phương pháp đánh giá thực nghiệm đa chiều bao gồm:
 
 ##### 1. Chỉ số đánh giá hiệu năng và độ chính xác khách quan (Objective Metrics)
-*   **Hệ số thời gian thực (Real-Time Factor - RTF):** Đo đạc tỷ số giữa thời gian suy luận TTS và thời lượng âm thanh thực tế sinh ra:
+*   **Hệ số thời gian thực (Real-Time Factor - RTF):** Đo tỉ số giữa thời gian xử lý suy luận của mô hình TTS trên CPU máy khách ($T_{\text{infer}}$, loại bỏ hoàn toàn thời gian ghi file WAV) và thời lượng thực tế của đoạn âm thanh sinh ra ($T_{\text{audio}}$):
     $$\text{RTF} = \frac{T_{\text{infer}}}{T_{\text{audio}}}$$
-    Mô hình đạt yêu cầu thời gian thực khi $\text{RTF} < 1.0$ trên phần cứng CPU mục tiêu của máy khách.
-*   **Mel-Reconstruction Loss:** Đánh giá độ sai lệch phổ âm giữa sóng âm tổng hợp và sóng âm gốc của tập validation trong quá trình huấn luyện.
-*   **Điểm đánh giá chất lượng giọng nói khách quan (NISQA MOS):** Sử dụng mô hình học sâu **NISQA** (Neural Image/Speech Quality Assessment) để dự đoán điểm số MOS chất lượng giọng nói (thang điểm từ 1.0 đến 5.0) một cách tự động và khách quan.
+    Mô hình đạt yêu cầu thời gian thực khi chỉ số $\text{RTF} < 1.0$ trên phần cứng CPU mục tiêu của máy khách. Để bảo đảm headroom cho các chặng khác (STT, MT) chạy song song, chỉ số RTF hướng tới mức tối ưu $\text{RTF} < 0.3$.
+*   **Tỷ lệ lỗi từ hồi chuyển (Round-trip STT WER):** Để đo lường khách quan độ rõ tiếng (intelligibility), các tệp âm thanh tổng hợp được gửi qua mô hình nhận dạng giọng nói PhoWhisper-large để giải mã ngược thành văn bản. Hệ thống tính toán Word Error Rate (WER) và Character Error Rate (CER) giữa văn bản gốc ban đầu và văn bản nhận dạng ngược để phát hiện các âm vị bị phát âm "ngọng" hoặc méo tiếng.
+*   **Đo đạc chất lượng âm phổ qua thống kê phổ (Spectral Stats):** Hệ thống tính toán các chỉ số thống kê trên phổ âm gồm: Trọng tâm phổ (Spectral Centroid - Hz) để đánh giá độ trầm của giọng, Tần số Rolloff 85% để đánh giá phân bố năng lượng tần số cao, và Tỷ lệ vượt ngưỡng qua điểm không (Zero-Crossing Rate - ZCR) để đo lượng tiếng xì/ồn âm học.
 
-##### 2. Chỉ số đánh giá chủ quan (Subjective Metrics)
-*   **Human Mean Opinion Score (Human MOS):** Thiết lập một khảo sát lấy ý kiến đánh giá từ người nghe thực tế dựa trên bộ **25 câu test chuẩn** (chứa các câu thoại tiếng Việt đa dạng về ngữ điệu, chứa từ mượn tiếng Anh và chữ số). Người nghe sẽ chấm điểm độc lập dựa trên ba tiêu chí: Độ tự nhiên (Naturalness), Độ rõ chữ (Intelligibility), và Cảm xúc giọng đọc (Expressiveness) theo thang điểm 5.0 tiêu chuẩn.
+##### 2. Đánh giá chất lượng giọng tự nhiên tự động và chủ quan
+*   **Độ tự nhiên khách quan tự động (NISQA MOS):** Hệ thống tích hợp mô hình học sâu **NISQA-TTS** (Neural Speech Quality Assessment) để dự đoán tự động điểm số cảm nhận chất lượng tự nhiên (Mean Opinion Score - Predictor MOS) của các file âm thanh sinh ra trên thang điểm từ 1.0 đến 5.0.
+*   **Khảo sát ý kiến người dùng (Human MOS):** Đồ án thiết lập bộ **25 câu test chuẩn hóa** nằm ngoài tập huấn luyện, phân chia thành 5 danh mục: cơ bản (Generic), số/ngày/giờ, tiếng Anh pha trộn (codeswitching), tongue-twister thanh điệu khó, và câu thoại dài 10-15s để kiểm tra tính ổn định của cao độ (prosody). Khảo sát thu thập ý kiến từ người nghe bản địa để chấm điểm MOS độc lập trên 3 khía cạnh: Độ tự nhiên (Naturalness), Độ rõ chữ (Intelligibility), và Tính biểu cảm (Expressiveness) theo thang điểm 5.0 chuẩn.
 
----
+
 
 ### 3.5. Điều phối Âm thanh Đầu ra và Cô lập Loopback Máy khách
 
 #### 3.5.1. Cơ chế định tuyến RoutePlayer phân tách kênh phát
 
-Tại máy khách PySide6, việc phát âm thanh tổng hợp chặng cuối được quản lý bởi thực thể điều phối `RoutePlayer`. Lớp này đóng vai trò wrapper cho hai trình phát âm thanh bất đồng bộ `AdaptiveJitterPlayer` tương ứng với hai định danh tuyến:
+Tại máy khách PySide6, việc phát âm thanh tổng hợp nhận được từ WebSocket được điều phối bất đồng bộ bởi đối tượng `RoutePlayer`. Lớp này đóng vai trò quản lý song song hai trình phát âm thanh `AdaptiveJitterPlayer` tương ứng với hai tuyến phát độc lập:
 
 ```
-[Server trả về TTS Audio Frame] ──> [Dispatcher RoutePlayer]
-                                            │
-                     ┌──────────────────────┴──────────────────────┐
-                     v (Route ID = 0)                              v (Route ID = 1)
-           [AdaptiveJitterPlayer 0]                      [AdaptiveJitterPlayer 1]
-                     │                                             │
-            (select_output_device)                        (select_output_device)
-                     │                                             │
-                     v                                             v
-       [VB-Audio Cable Input (Ảo)]                   [Default Audio Speaker (Thật)]
+[Server trả về văn bản dịch] ──> [Suy luận Piper TTS tại Client]
+                                           │
+                                           ▼
+                                 [Dispatcher RoutePlayer]
+                                           │
+                     ┌─────────────────────┴─────────────────────┐
+                     v (Route ID = 0)                            v (Route ID = 1)
+           [AdaptiveJitterPlayer 0]                    [AdaptiveJitterPlayer 1]
+                     │                                           │
+             (select_output_device)                      (select_output_device)
+                     │                                           │
+                     v                                           v
+       [VB-Audio Cable Input (Ảo)]                 [Default Audio Speaker (Thật)]
 ```
 
-*   **Tuyến Route 0 (VI $\rightarrow$ EN):** Đẩy dữ liệu âm thanh số float32 trực tiếp vào cổng vào ảo `"CABLE Input (VB-Audio Virtual Cable)"` để truyền tiếp làm thiết bị Micro cho phần mềm họp trực tuyến Zoom/Google Meet.
-*   **Tuyến Route 1 (EN $\rightarrow$ VI):** Phát trực tiếp ra Loa vật lý hoặc tai nghe mặc định của người dùng nội bộ.
+##### 1. Quy trình định tuyến kênh phát
+*   **Tuyến Route 0 (Dịch xuôi - tiếng Anh):** Khi nhận được âm phổ tiếng Anh dịch từ tiếng Việt của người dùng nội bộ, `RoutePlayer` chuyển hướng dữ liệu âm thanh số float32 đến trình phát `AdaptiveJitterPlayer 0`. Trình phát này được cấu hình thiết bị đầu ra ngầm định là cổng vào ảo `"CABLE Input (VB-Audio Virtual Cable)"`. Phần mềm họp trực tuyến (Zoom/Meet) tại máy khách sẽ chọn đầu ra ảo tương ứng (`CABLE Output`) làm thiết bị Micro đầu vào của nó để truyền đi họp.
+*   **Tuyến Route 1 (Dịch ngược - tiếng Việt):** Khi nhận được âm phổ dịch tiếng Việt của đối tác nước ngoài nói, `RoutePlayer` chuyển hướng dữ liệu âm thanh đến trình phát `AdaptiveJitterPlayer 1`. Trình phát này chọn thiết bị đầu ra mặc định là loa vật lý hoặc tai nghe thật của người dùng nội bộ nghe trực tiếp.
 
-Mỗi trình phát `AdaptiveJitterPlayer` tích hợp một bộ đệm chống giật thích ứng (Jitter Buffer) để sắp xếp các mảnh âm thanh nhị phân nhận được từ WebSocket mạng, duy trì tốc độ phát sóng âm liên tục và ngăn chặn hiện tượng méo tiếng do biến động trễ mạng chặng cuối.
+##### 2. Quy trình xử lý bộ đệm chống giật (Jitter Buffer Workflow)
+Mỗi trình phát `AdaptiveJitterPlayer` duy trì một hàng đợi đệm âm thanh (Jitter Queue) để sắp xếp các mảnh âm thanh nhị phân nhận được từ mạng WebSocket. Quy trình này tự động bù trừ các khoảng trễ mạng biến động (network jitter), đảm bảo luồng phát âm thanh liên tục, không bị giật cục hay đứt gãy tín hiệu.
 
 #### 3.5.2. Ghi âm WASAPI Loopback cô lập âm phản hồi (Echo Mitigation)
 
-Để đảm bảo hệ thống có thể hoạt động trong môi trường phòng họp thực tế mà không gây ra vòng lặp hú tiếng hoặc nhận dạng lặp vô hạn, máy khách triển khai module ghi âm loopback **WASAPI (Windows Audio Session API)**:
+Quy trình cô lập âm học là chặng chốt chặn quan trọng nhất để hệ thống S2ST hoạt động trong môi trường thực tế mà không gây ra vòng lặp phản hồi âm thanh (feedback loop) và tiếng vọng âm học (acoustic echo). Quy trình này được thiết kế phối hợp giữa ghi âm loopback kỹ thuật số và cô lập tuyến phát:
 
-1.  **Thu âm hệ thống trực tiếp:** Lớp `LoopbackCaptureService` gọi API âm thanh WASAPI trực tiếp trên thiết bị đầu ra loa hệ thống mặc định. Tín hiệu âm thanh của đối tác phát ra từ phần mềm họp trực tuyến (Zoom/Meet) được thu lại trực tiếp từ tầng số học của card âm thanh, bỏ qua hoàn toàn các tạp âm vật lý trong phòng và giọng nói của người dùng nội bộ.
-2.  **Triệt tiêu vòng lặp phản hồi:** Do luồng thoại dịch xuôi (Route 0) được định tuyến ngầm hoàn toàn bằng tín hiệu số qua driver ảo VB-Cable, loa vật lý của máy khách hoàn toàn không phát ra tiếng dịch tiếng Anh này. Đồng thời, WASAPI loopback chỉ ghi âm kênh loa mặc định (nơi chỉ phát tiếng đối tác và tiếng dịch tiếng Việt Route 1 dành cho người dùng nghe bằng tai nghe vật lý), triệt tiêu hoàn toàn khả năng micro thật của máy khách thu lại tiếng dịch của chính mình, đảm bảo tính cô lập âm học tuyệt đối cho toàn bộ pipeline S2ST song hướng.
+1.  **Quy trình ghi âm loopback WASAPI:** Lớp dịch vụ `LoopbackCaptureService` gọi API âm thanh WASAPI trực tiếp trên thiết bị đầu ra mặc định của hệ thống Windows với cờ ghi âm loopback hoạt động. Tín hiệu âm thanh của đối tác phát ra từ phần mềm họp trực tuyến (Zoom/Meet) được thu lại trực tiếp từ tầng số học của card âm thanh. Quy trình này giúp thu âm thanh sạch hoàn toàn, loại bỏ 100% tiếng ồn vật lý trong phòng họp và giọng nói của người dùng nội bộ.
+2.  **Quy trình triệt tiêu phản hồi âm học:** 
+    *   Âm thanh dịch tiếng Anh (Route 0) được đẩy ngầm bằng tín hiệu số vào driver ảo VB-Cable, loa ngoài của người dùng hoàn toàn không phát ra âm thanh này. Do đó micro thật của người dùng không thể thu lại tiếng dịch tiếng Anh.
+    *   Âm thanh dịch tiếng Việt (Route 1) phát ra loa vật lý để người dùng nghe. Tuy nhiên, WASAPI loopback chỉ ghi âm luồng âm thanh hệ thống chính (tiếng của đối tác nói tiếng Anh phát ra từ phần mềm họp), hoàn toàn không ghi nhận âm thanh phát ra từ trình phát dịch tiếng Việt của hệ thống.
+    *   Sự cô lập luồng âm vật lý và kỹ thuật số này triệt tiêu hoàn toàn khả năng micro của máy khách thu lại âm thanh dịch của chính mình, đảm bảo tính cô lập âm học tuyệt đối cho toàn bộ pipeline S2ST song hướng mà không cần đặc quyền Administrator hệ thống.
+
+
 
 ---
 
