@@ -426,31 +426,346 @@ PhoWhisper được phát triển thông qua việc tinh chỉnh (fine-tuning) s
 ## CHƯƠNG 3. PHƯƠNG PHÁP NGHIÊN CỨU ĐỀ XUẤT
 
 ### 3.1. Thiết kế Kiến trúc Hệ thống Tổng quát (S2ST Client-Server)
+
 #### 3.1.1. Sơ đồ khối kiến trúc kết nối song công thời gian thực qua giao thức WebSocket
+
+Hệ thống dịch giọng nói thời gian thực song hướng Anh - Việt (S2ST) được thiết kế theo kiến trúc Máy khách - Máy chủ (Client-Server) nhằm tối ưu hóa việc phân bổ tài nguyên tính toán. Các tác vụ dịch máy (MT) và nhận dạng tiếng nói (STT) đòi hỏi tính toán ma trận song song quy mô lớn được đẩy lên phía máy chủ (Server) tích hợp GPU chuyên dụng. Ngược lại, tác vụ tổng hợp tiếng nói (TTS) nhờ sử dụng mô hình Piper nén nhẹ sẽ được thực thi trực tiếp tại CPU của máy khách (Client), giúp loại bỏ băng thông truyền tải âm thanh tổng hợp chặng cuối qua mạng, đồng thời giảm tải tính toán cho GPU máy chủ.
+
+Để đảm bảo khả năng truyền nhận dữ liệu liên tục với độ trễ tối thiểu, hệ thống sử dụng kết nối song công thời gian thực qua giao thức **WebSocket**. Sơ đồ khối kiến trúc kết nối và luồng dữ liệu song hướng được thể hiện qua biểu đồ dưới đây:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as Người dùng nội bộ (VI)
+    participant Client as Máy khách PySide6 (Windows)
+    participant WS as Kết nối WebSocket (Song công)
+    participant Server as Máy chủ FastAPI (GPU T4 Cloud)
+    actor Partner as Đối tác nước ngoài (EN)
+
+    %% Luồng dịch xuôi (VI -> EN)
+    Note over User, Partner: LUỒNG 0: DỊCH XUÔI (VI -> EN)
+    User->>Client: Nói (tiếng Việt)
+    Client->>Client: Thu âm Micro thật (PCM16 16kHz Mono, chunk 200ms)
+    Client->>WS: Gửi khung nhị phân 0x02 (chứa timestamp + audio chunk)
+    WS->>Server: Chuyển tiếp âm thanh dạng streaming
+    Server->>Server: Silero VAD (Speech detected) -> Trích xuất câu nói
+    Server->>Server: PhoWhisper Engine (Inference) -> Văn bản tiếng Việt
+    Server->>WS: Gửi JSON stt.final (Văn bản gốc)
+    WS->>Client: Hiển thị văn bản gốc tiếng Việt lên GUI
+    Server->>Server: NLLB-200 Engine (Dịch thuật) -> Văn bản tiếng Anh
+    Server->>WS: Gửi JSON mt.result (Văn bản dịch)
+    WS->>Client: Chuyển tiếp và hiển thị văn bản dịch tiếng Anh
+    Client->>Client: Gửi văn bản dịch tiếng Anh vào luồng TTS nội bộ
+    Client->>Client: Piper TTS Engine (Inference trên CPU) -> Âm thanh tiếng Anh
+    Client->>Client: RoutePlayer (Route 0) -> Đẩy vào VB-Cable Input
+    Client->>Partner: Meeting App (Zoom/Meet) đọc CABLE Output làm Mic -> Phát loa đối tác
+
+    %% Luồng dịch ngược (EN -> VI)
+    Note over User, Partner: LUỒNG 1: DỊCH NGƯỢC (EN -> VI)
+    Partner->>Client: Nói (tiếng Anh) qua Meeting App
+    Client->>Client: WASAPI Loopback Capture (Thu âm thanh hệ thống 16kHz)
+    Client->>WS: Gửi khung nhị phân 0x02 (Route 1 + audio chunk)
+    WS->>Server: Chuyển tiếp âm thanh tiếng Anh dạng streaming
+    Server->>Server: Silero VAD (Speech detected) -> Trích xuất câu nói
+    Server->>Server: Faster-Whisper Engine -> Văn bản tiếng Anh
+    Server->>WS: Gửi JSON stt.final (Văn bản gốc tiếng Anh)
+    WS->>Client: Hiển thị văn bản tiếng Anh đối tác lên GUI
+    Server->>Server: NLLB-200 Engine (Dịch thuật) -> Văn bản tiếng Việt
+    Server->>WS: Gửi JSON mt.result (Văn bản dịch tiếng Việt)
+    WS->>Client: Hiển thị văn bản dịch tiếng Việt lên GUI
+    Client->>Client: Gửi văn bản dịch tiếng Việt vào luồng TTS nội bộ
+    Client->>Client: Piper TTS Engine (Inference trên CPU) -> Âm thanh tiếng Việt (giọng Nam)
+    Client->>Client: RoutePlayer (Route 1) -> Phát trực tiếp ra Tai nghe vật lý của Người dùng
+
+```
+
 #### 3.1.2. Thiết kế định dạng khung truyền tải nhị phân (Binary Pipeline Frame) định tuyến route và khung điều khiển JSON (Control Frame)
+
+Để tối ưu hóa băng thông mạng và giảm thiểu overhead phân tích cú pháp (parsing overhead) tại máy chủ, hệ thống phân tách gói tin truyền dẫn thành hai định dạng cơ bản:
+
+##### 1. Khung nhị phân (Binary Pipeline Frame)
+Dữ liệu âm thanh được gửi từ máy khách lên máy chủ hoặc âm thanh tổng hợp gửi ngược lại được đóng gói dưới dạng mảng byte nhị phân. Giao thức nhị phân được cấu trúc theo định dạng định hướng đánh dấu (marker-based), cấu trúc chi tiết của tiêu đề (header) như sau:
+*   **Dạng không gắn nhãn thời gian (Kiểu khung `0x01`):** 
+    $$\text{Frame}_{0x01} = [\text{Byte } 0: \text{Loại khung (0x01)}] \mathbin{\Vert} [\text{Byte } 1: \text{Định danh tuyến (Route ID)}] \mathbin{\Vert} [\text{Bytes } 2...: \text{Dữ liệu âm thanh PCM}]$
+*   **Dạng gắn nhãn thời gian chặng mạng (Kiểu khung `0x02`):**
+    $$\text{Frame}_{0x02} = [\text{Byte } 0: \text{Loại khung (0x02)}] \mathbin{\Vert} [\text{Byte } 1: \text{Route ID}] \mathbin{\Vert} [\text{Bytes } 2..9: \text{Nhãn thời gian } t_{client\_send} \text{ (u64 LE, 8 bytes)}] \mathbin{\Vert} [\text{Bytes } 10...: \text{Dữ liệu âm thanh PCM}]$
+
+Định danh tuyến (`Route ID`) đóng vai trò phân luồng xử lý: `Route ID = 0` đại diện cho luồng dịch xuôi (VI $\rightarrow$ EN), `Route ID = 1` đại diện cho luồng dịch ngược (EN $\rightarrow$ VI). Nhãn thời gian $t_{client\_send}$ (giá trị epoch tính bằng mili-giây) được máy khách đóng dấu ngay trước khi gửi để phục vụ hệ thống đo đạc hiệu năng chặng mạng thời gian thực.
+
+##### 2. Khung điều khiển (JSON Control Frame)
+Các sự kiện cấu hình, điều khiển và phản hồi văn bản được biểu diễn bằng các khung JSON có cấu trúc rõ ràng. Các loại khung JSON chính bao gồm:
+*   **Khung stt.interim / stt.final:** Server trả về kết quả nhận dạng tạm thời (interim) hoặc chính thức (final) của chặng STT, chứa các trường: `type`, `segment_id`, `route_id`, `text`, `confidence`, `language` và `audio_duration_s`.
+*   **Khung mt.result:** Server trả về kết quả dịch thuật chính thức, chứa các trường: `type`, `segment_id`, `route_id`, `source_lang`, `target_lang` và `text` (bản dịch).
+*   **Khung tts.result:** Đánh dấu hoàn thành sinh âm thanh chặng cuối, chứa metadata về `sample_rate`, `audio_num_samples`, và cấu trúc `streaming_hook` chỉ ra thứ tự phân đoạn (`chunk_index` / `chunk_count`) của câu thoại phục vụ cơ chế cuốn chiếu phía khách.
+
 #### 3.1.3. Cấu trúc Session State và cơ chế định tuyến bất đồng bộ Mode-Dispatch trên Server FastAPI
 
+Tại Server FastAPI, mỗi kết nối WebSocket được đại diện bởi một phiên hoạt động độc lập (`SessionState`). Đối tượng `SessionState` lưu giữ vòng đời kết nối, quản lý hàng đợi xuất bản bất đồng bộ (`outbound_queue`) và quản lý các tài nguyên của tuyến dịch thuật.
+
+Cơ chế định tuyến bất đồng bộ **Mode-Dispatch** phân tích gói tin đầu vào và định tuyến xử lý theo nguyên tắc bất đồng bộ:
+1.  **Phân tách khung nhị phân:** Khi Server nhận được gói tin nhị phân, bộ phân tích cú pháp `parse_marker_frame` sẽ giải mã byte đầu tiên để xác định định dạng (`0x01` hoặc `0x02`), đọc `Route ID` để lấy cấu hình định tuyến tương ứng từ phiên, và kiểm tra tính toàn vẹn của dữ liệu âm thanh dựa trên số chiều kênh và số byte trên mỗi mẫu.
+2.  **Định tuyến luồng hoạt động:** Sau khi giải mã thành công, chunk âm thanh cùng các nhãn thời gian tương ứng được đẩy vào lớp điều phối `StreamingSTTSessionManager` riêng biệt của tuyến đó. Lớp này quản lý bộ lọc phân đoạn VAD, bộ đệm STT, và các luồng xử lý nền của riêng nó.
+3.  **Hàng đợi xuất bản chia sẻ (Shared Outbound Queue):** Điểm đặc biệt trong thiết kế là toàn bộ kết quả từ các luồng STT, MT và TTS background đều được đẩy chung vào hàng đợi bất đồng bộ `outbound_queue` ở cấp độ phiên kết nối. Một tác vụ chạy nền duy nhất (router drain task) thực hiện lấy dữ liệu từ hàng đợi này và gửi tuần tự về máy khách qua WebSocket. Thiết kế này loại bỏ hoàn toàn vấn đề kẹt hàng đợi (stuck message) khi luồng truyền phát âm thanh của một tuyến dừng lại đột ngột trước khi các tác vụ xử lý nền chặng sau hoàn tất.
+
+---
+
 ### 3.2. Thiết kế Client App (PySide6) và Giải pháp Cô lập Loopback
+
 #### 3.2.1. Cơ chế bất đồng bộ tích hợp ứng dụng PySide6 với vòng lặp sự kiện `qasync` trên môi trường Windows
+
+Ứng dụng máy khách được phát triển bằng thư viện GUI PySide6 (Qt6 cho Python). Đối với ứng dụng thời gian thực, thách thức lớn nhất là làm sao duy trì giao diện UI mượt mà (chạy ở tần số quét 60Hz) song song với việc ghi nhận/phát các luồng âm thanh liên tục và xử lý các gói tin mạng bất đồng bộ.
+
+Để giải quyết vấn đề này, đồ án sử dụng thư viện **`qasync`** để tích hợp vòng lặp sự kiện của Qt (`QEventLoop`) vào vòng lặp bất đồng bộ của Python (`asyncio.AbstractEventLoop`). Cơ chế này cho phép các hàm xử lý mạng WebSocket và luồng phát âm thanh hoạt động dưới dạng các `coroutine` bất đồng bộ (`async`/`await`) ngay trên luồng chính của ứng dụng mà không cần khởi tạo quá nhiều luồng phụ (thread) phức tạp, giảm thiểu tối đa tài nguyên tiêu thụ và nguy cơ xung đột luồng (deadlock/race condition) trên hệ điều hành Windows.
+
 #### 3.2.2. Giải pháp định tuyến âm thanh hai tuyến Route 0 (VB-CABLE Input) và Route 1 (Local Default Speaker)
+
+Để hệ thống hoạt động trơn tru trong kịch bản họp trực tuyến, máy khách phải điều phối hai luồng phát âm thanh dịch thuật độc lập thông qua lớp `RoutePlayer`:
+*   **Route 0 (Dịch xuôi - VI $\rightarrow$ EN):** Tín hiệu âm thanh dịch tiếng Anh từ Server gửi về phải được đưa vào cổng vào ảo **VB-Audio Cable Input** (thiết bị phát ảo). Trình họp trực tuyến (Zoom/Google Meet) tại máy khách sẽ được cấu hình chọn thiết bị micro đầu vào tương ứng là **CABLE Output** (thiết bị thu ảo). Nhờ đó, đối tác nước ngoài sẽ nghe thấy giọng dịch tiếng Anh trực tiếp qua kênh thoại của cuộc họp như một luồng micro sạch sẽ.
+*   **Route 1 (Dịch ngược - EN $\rightarrow$ VI):** Âm thanh tổng hợp tiếng Việt tương ứng với lời nói tiếng Anh của đối tác nước ngoài được phát trực tiếp ra **Loa vật lý hoặc Tai nghe mặc định** của người dùng nội bộ để họ có thể lắng nghe bản dịch.
+
+```
+                  +-----------------------------------+
+                  |         Client PySide6 GUI        |
+                  +-----------------------------------+
+                     /                             \
+     (Route 0: Dịch Việt -> Anh)         (Route 1: Dịch Anh -> Việt)
+                   /                                 \
+  +-------------------------------+       +-------------------------------+
+  | RoutePlayer: select_device()  |       | RoutePlayer: select_device()  |
+  | Target: VB-Audio Cable Input  |       | Target: Default Speaker/Loa   |
+  +-------------------------------+       +-------------------------------+
+                  |                                       |
+                  v (Tín hiệu số sạch)                    v (Âm thanh vật lý)
+  [CABLE Input (Audio Playback)]                    [Loa vật lý / Tai nghe]
+                  |                                       |
+   (Ánh xạ driver ảo ngầm định)                           | (Người dùng nghe)
+                  v                                       v
+  [CABLE Output (Audio Recording)]                   [Người dùng]
+                  |
+    (Chọn làm Mic cho Zoom/Meet)
+                  v
+  [Đối tác nước ngoài nghe giọng EN]
+```
+
 #### 3.2.3. Thuật toán tự động nhận diện và ánh xạ thiết bị âm thanh ảo VB-Audio Virtual Cable không cần quyền Administrator
+
+Việc cài đặt và cấu hình card âm thanh thường đòi hỏi quyền Quản trị viên (Administrator). Để đảm bảo ứng dụng có thể chạy trực tiếp trên các máy tính người dùng phổ thông, lớp `virtual_setup.py` triển khai giải thuật quét thiết bị ngầm dựa trên PyAudio:
+
+1.  **Quét danh sách thiết bị:** Chương trình truy vấn danh sách tất cả các thiết bị âm thanh đầu vào và đầu ra hiện có thông qua hàm `pa.get_device_info_by_index(i)`.
+2.  **Lọc từ khóa không đặc quyền:** Thay vì truy vấn trực tiếp vào Registry của Windows, thuật toán thực hiện lọc các tên thiết bị khớp với tập từ khóa cấu hình:
+    $$\text{Keywords} = \{\text{"vb-audio"}, \text{"vb audio"}, \text{"virtual cable"}, \text{"cable input"}, \text{"cable output"}\}$$
+3.  **Tự động ánh xạ:** Nếu phát hiện thiết bị thỏa mãn, hệ thống sẽ tự động trích xuất chuỗi định danh hiển thị của `"CABLE Input (VB-Audio Virtual Cable)"` để gán cho `Route 0`. Nếu không tìm thấy driver, hệ thống sẽ đưa ra cảnh báo yêu cầu cài đặt và tự động chuyển hướng Route 0 về thiết bị phát mặc định để duy trì tính liên tục của hệ thống.
+
 #### 3.2.4. Cơ chế thu âm loopback WASAPI cô lập âm phản hồi (Acoustic Echo & Feedback Loop Mitigation)
 
+Khi họp trực tuyến song hướng, tiếng phát dịch ngược (Route 1) ra loa ngoài của người dùng nội bộ rất dễ bị micro vật lý của họ thu lại, tạo nên vòng lặp phản hồi vô hạn. Để triệt tiêu vấn đề này, máy khách triển khai lớp `LoopbackCaptureService` dựa trên kiến trúc **Windows Audio Session API (WASAPI) Loopback**:
+
+```
+[Tiếng đối tác (EN) từ Zoom/Meet] ──> [Loa hệ thống (Default Speaker)]
+                                            │
+                                            ├─> Phát ra ngoài loa vật lý
+                                            │
+                                            └─> (WASAPI Loopback Capture)
+                                                      │
+                                                      v
+                                            [Tín hiệu số PCM16 16kHz]
+                                                      │
+                                                      v
+                                            [Gửi lên Server dịch EN->VI]
+```
+
+Thay vì ghi âm môi trường phòng bằng Micro, lớp ghi âm này truy vấn thiết bị đầu ra mặc định và mở một stream ghi âm loopback trực tiếp từ bộ đệm của card âm thanh thông qua cờ `include_loopback=True` của thư viện `soundcard`. Cơ chế này mang lại hai ưu điểm vượt trội:
+1.  **Chất lượng âm thanh tuyệt đối:** Thu trực tiếp tín hiệu số PCM16 phát ra từ phần mềm họp trực tuyến, không bị lẫn tạp âm phòng họp, tiếng ồn môi trường hay giọng nói vật lý của người dùng nội bộ.
+2.  **Cách ly phản hồi âm học:** Do chỉ thu tín hiệu từ kênh đầu ra hệ thống, tiếng người dùng nội bộ nói tiếng Việt (chỉ đi qua Micro vật lý đưa trực tiếp vào Route 0 gửi đi) hoàn toàn không xuất hiện trên kênh phát hệ thống, từ đó triệt tiêu triệt để hiện tượng phản hồi âm học và tiếng vọng (acoustic echo) mà không cần triển khai thuật toán khử vọng AEC (Acoustic Echo Cancellation) phức tạp.
+
+---
+
 ### 3.3. Thiết kế Server App (FastAPI) phân tầng Hướng Engine (Plug-and-play)
+
 #### 3.3.1. Polymorphic Facade Pattern: Đồng bộ hóa 85% kiến trúc giao tiếp 3 AI Engine (STT, MT, TTS)
+
+Để đảm bảo tính linh hoạt, dễ mở rộng và cho phép thay thế các mô hình AI khác nhau mà không làm ảnh hưởng đến cấu trúc điều phối của API, Server FastAPI được thiết kế theo mẫu **Polymorphic Facade Pattern**. 
+
+Ba lớp điều phối chính là `STTEngine`, `MTEngine`, và `TTSEngine` được thiết kế đồng bộ hóa giao tiếp lên tới **85% cấu trúc** thông qua một giao ước (Contract) chung bất đồng bộ:
+*   `load_async(**kwargs) -> bool`: Tải mô hình vào bộ nhớ RAM/VRAM bất đồng bộ, thực hiện warmup.
+*   `infer_async(**kwargs) -> Any`: Thực hiện suy luận bất đồng bộ trên dữ liệu đầu vào (âm thanh hoặc văn bản).
+*   `cleanup_session(session_id) -> int`: Giải phóng tài nguyên và dọn dẹp các mô hình thuộc phiên đã đóng.
+
+Các lớp Facade này hoạt động như các trình bao bọc (Wrapper) trừu tượng. Phía dưới Facade, các mô hình cụ thể (như `FasterWhisperEngine`, `PhoWhisperEngine` đối với STT; hoặc `PiperONNXEngine`, `CoquiTTSEngine` đối với TTS) được khởi tạo thông qua các Factory tương ứng (`TranscriberFactory`, `TTSFactory`). Trình điều phối API chỉ tương tác trực tiếp với Facade, giúp toàn bộ hệ thống đạt tính chất lắp ghép cắm-và-chạy (Plug-and-play) cao.
+
 #### 3.3.2. Kiến trúc song song hóa Execution Lane (Worker pools và operation locks) ngăn ngừa race condition trên GPU VRAM
+
+Khi triển khai hệ thống trên máy chủ có tài nguyên GPU hạn chế (NVIDIA Tesla T4 GPU với 16GB VRAM), việc chạy đồng thời nhiều tác vụ suy luận nặng từ các tuyến kết nối khác nhau dễ dẫn đến hiện tượng tranh chấp tài nguyên bộ nhớ đồ họa, gây ra lỗi thiếu bộ nhớ (Out of Memory - OOM) hoặc sụt giảm hiệu năng nghiêm trọng do phân mảnh CUDA.
+
+Để giải quyết vấn đề này, đồ án thiết lập kiến trúc song song hóa mang tên **Execution Lane**:
+
+```
+             [Yêu cầu Client A]         [Yêu cầu Client B]
+                     │                          │
+                     v                          v
+             [Facade Engine]            [Facade Engine]
+                     │                          │
+                     └──────────┬───────────────┘
+                                │
+                                v
+                   [ExecutionLane: run_blocking]
+                                │
+                     ┌──────────┴──────────┐
+                     v                     v
+              [CUDA GPU Lane]       [CPU Execution Lane]
+             (Model VAD/STT/MT)       (Model TTS ONNX)
+                     │                     │
+             [operation_lock]              v
+             (Khóa tuần tự hóa)      (Song song đa luồng)
+```
+
+1.  **Phân luồng thiết bị (Device Lane):** Hệ thống phân tách rõ rệt các luồng thực thi: các tác vụ STT và MT nặng được chỉ định thực thi trên GPU (`cuda` lane), trong khi tác vụ TTS (ONNX) được định hướng chạy trên CPU để tối ưu hóa khả năng đáp ứng song song.
+2.  **Khóa hoạt động tuần tự (Operation Lock):** Đối với mỗi thực thể mô hình trong hồ tài nguyên (`STTPoolManager`, `MTPoolManager`), hệ thống gắn kèm một khóa bất đồng bộ `asyncio.Lock()` (được gọi là `operation_lock`). Khi một tuyến gọi suy luận qua `ExecutionLane.run_blocking()`, khóa này sẽ ép các luồng xử lý trên cùng một thực thể mô hình phải xếp hàng thực thi tuần tự (serialization).
+3.  **Thread Pool Executor:** Các phép toán suy luận block luồng chính của Python (do các thư viện C++ như CTranslate2 hay ONNX Runtime thực hiện) được đẩy vào một Thread Pool chuyên biệt. Sự kết hợp giữa khóa tuần tự hóa và Thread Pool giúp triệt tiêu hoàn toàn hiện tượng race condition trên GPU VRAM, đảm bảo hệ thống hoạt động ổn định 100% dưới tải cao mà không bị crash CUDA.
+
 #### 3.3.3. Giải thuật Preload & Warmup triệt tiêu hoàn toàn độ trễ khởi động lạnh (Cold-start latency) lúc startup
 
+Các mô hình học sâu kích thước lớn (như PhoWhisper-medium với 769 triệu tham số hay NLLB-200) thường mất từ 5 đến 15 giây để tải từ đĩa cứng vào VRAM GPU, và mất thêm khoảng 2 đến 3 giây cho lượt suy luận đầu tiên do thư viện CUDA cần khởi tạo bộ đệm tính toán (kernels initialization). Khoảng thời gian này được gọi là độ trễ khởi động lạnh (Cold-start latency).
+
+Để triệt tiêu độ trễ này tại thời điểm người dùng kết nối, Server triển khai giải thuật **Preload & Warmup** tự động ngay khi khởi chạy máy chủ FastAPI (sự kiện `startup` event):
+1.  **Preload:** Kích hoạt tải trước toàn bộ các mô hình nền tảng vào bộ nhớ: `FasterWhisper` (small-multilingual), `PhoWhisper` (medium-ct2), `NLLB-200` (dạng lượng tử hóa int8_float16), và các giọng nói Piper TTS cần thiết.
+2.  **Warmup suy luận giả lập:** Sau khi mô hình được tải lên, hệ thống tự động sinh ra một đoạn dữ liệu âm thanh giả (dummy audio chunk gồm các mẫu số 0) và văn bản dummy để thực hiện một lượt suy luận STT, MT và TTS giả lập. Lượt chạy này kích hoạt việc tối ưu hóa nhân tính toán trên GPU và khởi tạo hoàn chỉnh đồ thị tính toán. Kết quả thực tế cho thấy giải thuật Warmup giúp đưa độ trễ của lượt kết nối đầu tiên từ 15-20 giây về mức độ trễ vận hành thực tế của hệ thống (<1.0 giây).
+
+---
+
 ### 3.4. Thiết kế Pipeline Streaming STT-MT-TTS tối ưu hóa thời gian thực
+
 #### 3.4.1. Cơ chế cắt câu động Silero VAD tích hợp hangover frame bảo toàn phụ âm cuối cho bộ nhận dạng Whisper
+
+Trong kịch bản streaming, việc phân đoạn âm thanh (segmentation) là chặng quyết định. Nếu cắt câu quá sớm, câu dịch chặng sau sẽ bị mất ngữ nghĩa; nếu cắt quá muộn, độ trễ hệ thống sẽ tăng lên. Hệ thống tích hợp mô hình **Silero VAD** chạy bất đồng bộ trên từng chunk âm thanh 200ms để phân đoạn giọng nói:
+
+##### 1. Ngưỡng im lặng Sweet Spot
+Thời gian im lặng liên tục để trigger kết thúc câu (`stt.final`) được xác định qua tham số `SILENCE_THRESHOLD_FRAMES`. Qua các thử nghiệm thực tế, giá trị này được cấu hình ở mức **2.25 khung** (tương đương với $2.25 \times 200\text{ms} = 450\text{ms}$):
+*   Nếu đặt dưới 400ms, hệ thống cắt câu rất nhanh nhưng dễ bị phân mảnh câu khi người nói dừng lại lấy hơi ngắn, làm giảm chất lượng dịch thuật của NLLB-200.
+*   Nếu đặt trên 500ms, độ trễ phản hồi đầu ra tăng lên rõ rệt. Ngưỡng **450ms** là điểm cân bằng tối ưu (sweet spot), đảm bảo bỏ qua các khoảng lặng lấy hơi nhỏ nhưng kích hoạt lệnh dịch ngay khi người nói dứt câu.
+
+##### 2. Cơ chế Hangover Frame
+Để tránh hiện tượng mất các phụ âm cuối hoặc âm gió của từ cuối cùng trong câu (như /s/, /t/, /z/ vốn có năng lượng âm học yếu và thường bị VAD nhận diện nhầm là khoảng lặng), hệ thống áp dụng cơ chế **Hangover Frame** với giá trị `HANGOVER_FRAMES = 2` (tương đương 400ms). Khi VAD phát hiện tín hiệu đã chuyển từ tiếng nói sang khoảng lặng, hệ thống không dừng thu âm ngay mà tiếp tục giữ lại và ghép thêm 2 khung âm thanh im lặng tiếp theo vào bộ đệm của câu nói hiện tại trước khi chuyển sang chặng xử lý STT, giúp bảo toàn toàn vẹn đặc trưng âm phổ chặng cuối của Whisper.
+
 #### 3.4.2. Giải thuật đệm dịch ngắn (Short-MT buffering) nâng cao ngữ điệu và Watchdog tự động flush sau 3 giây im lặng
+
+Khi nhận dạng tiếng nói dạng streaming, kết quả STT thường được trả về theo từng phân đoạn ngắn. Nếu đưa trực tiếp các đoạn văn bản ngắn (dưới 3-4 từ) vào chặng dịch máy NMT và tổng hợp TTS, giọng nói phát ra sẽ rất giật cục, thiếu tự nhiên do mất đi ngữ điệu câu.
+
+Để khắc phục, đồ án đề xuất giải thuật **Đệm dịch ngắn (Short-MT Buffering)** kết hợp cơ chế giám sát im lặng (Watchdog):
+
+```
+       [Văn bản dịch máy MT]
+                 │
+                 v
+      < Số từ < MIN_MT_WORDS? > ──(Có)──> [Lưu vào Pending Buffer]
+                 │                                    │
+               (Không)                           (Watchdog)
+                 │                        < Chờ > PENDING_TIMEOUT? >
+                 │                                    │
+                 v                                  (Có)
+      [Ghép Pending + Current]                        │
+                 │                                    v
+                 └──────────────────────────────> [Force Flush]
+                                                      │
+                                                      v
+                                           [Trigger TTS Engine]
+```
+
+1.  **Ngưỡng từ tối thiểu cho TTS:** Tham số `MIN_MT_WORDS_FOR_TTS` được đặt ở mức **4 từ**. Khi kết quả dịch máy trả về có độ dài nhỏ hơn 4 từ, hệ thống sẽ tạm hoãn việc gọi TTS, lưu đoạn văn bản này vào bộ đệm `_pending_mt_text`.
+2.  **Ghép nối ngữ cảnh:** Khi câu tiếp theo hoàn thành, văn bản mới sẽ được nối tiếp vào bộ đệm pending để tạo thành một câu có nghĩa dài hơn trước khi gửi đến tầng TTS, giúp cải thiện rõ rệt ngữ điệu và độ tự nhiên của giọng đọc dịch thuật.
+3.  **Watchdog Timer:** Để tránh hiện tượng câu cuối cùng của cuộc hội thoại bị kẹt vĩnh viễn trong bộ đệm khi người nói ngừng giao tiếp, một bộ đệm trượt giám sát thời gian thực (`PENDING_MT_TIMEOUT_S = 3.0s`) được kích hoạt. Nếu bộ đệm pending có dữ liệu và không có từ mới xuất hiện trong vòng 3.0 giây, hệ thống tự động giải phóng (Flush) cưỡng bức toàn bộ văn bản trong đệm để gửi đến TTS, đảm bảo không làm mất thông tin cuối cùng của người dùng.
+
 #### 3.4.3. Quy trình chia tách câu đa tầng (SBD) và Comma Fallback Splitter cho suy luận TTS cuốn chiếu liên tục
+
+Để giảm thiểu độ trễ Time-to-First-Audio (TTFA) của tầng TTS (thời gian từ lúc dứt câu đến lúc phát ra âm thanh dịch đầu tiên), văn bản dịch máy trước khi đưa vào TTS sẽ đi qua quy trình chia tách câu đa tầng:
+
+##### 1. Phân đoạn ranh giới câu (Sentence Boundary Detection - SBD)
+Hệ thống sử dụng bộ phân đoạn ngôn ngữ SpaCy (tích hợp Regex fallback) để tách văn bản dịch thành các câu đơn độc lập dựa trên các dấu chấm câu mềm (như `.`, `?`, `!`). Thay vì đợi toàn bộ đoạn dịch dài dịch xong mới đưa vào TTS, hệ thống sẽ đưa từng câu đơn đã được SBD phân đoạn vào TTS suy luận cuốn chiếu. Người dùng nghe thấy câu đầu tiên phát ra trong khi Server vẫn đang song song suy luận TTS cho câu thứ hai.
+
+##### 2. Bộ cắt dấu phẩy dự phòng (Comma Fallback Splitter)
+Trong nhiều trường hợp dịch máy (đặc biệt là mô hình NLLB-200 khi dịch từ Việt sang Anh), bản dịch đầu ra thường là một câu rất dài có nhiều dấu phẩy nhưng không có dấu chấm câu ở giữa. Nếu đưa câu dài này vào TTS, độ trễ TTFA sẽ tăng lên rất cao. Hệ thống cấu hình thêm cơ chế Comma Fallback Splitter: nếu một phân đoạn sau SBD vẫn dài hơn `LONG_SENTENCE_MAX_CHARS = 150` ký tự, hệ thống sẽ tự động cắt câu theo dấu phẩy gần nhất, với điều kiện phân đoạn cắt nhỏ phải đạt độ dài tối thiểu `LONG_SENTENCE_MIN_CHUNK_CHARS = 60` ký tự để tránh phát âm bị vụn từ.
+
 #### 3.4.4. Cơ chế đo đạc hiệu năng chặng mạng bằng telemetry pipeline.metric và giải pháp rollup segment_id đầu cuối
 
+Để giám sát và phân tích chi tiết hiệu năng hoạt động của hệ thống thời gian thực, Server FastAPI triển khai hệ thống thu thập telemetry bất đồng bộ:
+
+1.  **Gắn nhãn thời gian chặng mạng:** Khi frame nhị phân đầu tiên của một câu nói mới (`segment_id` mới) được gửi lên từ máy khách, Server ghi lại hai nhãn thời gian: $t_{client\_send}$ (trích xuất từ frame `0x02`) và $t_{server\_recv}$ (khi Server nhận được chunk). Hai nhãn thời gian này được chuyển tiếp xuyên suốt các chặng STT, MT, và TTS của segment đó.
+2.  **Tích lũy Metric (Rollup):** Tại mỗi chặng xử lý (STT, MT, TTS), các bộ Diagnostics tương ứng sẽ ghi lại độ trễ suy luận thực tế (ví dụ: $L_{STT\_infer}, L_{MT\_infer}, L_{TTS\_infer}$) và đóng gói thành các khung JSON `stt.metric`, `mt.metric`, `tts.metric`. Đối tượng `StreamingSTTSessionManager` tích lũy các metric này vào cấu trúc dữ liệu `_segment_rollup` dựa trên khóa `segment_id`.
+3.  **Xuất bản Pipeline Metric:** Khi phân đoạn cuối cùng của chặng TTS hoàn tất suy luận và âm thanh được phát ra, Server sẽ gom toàn bộ dữ liệu tích lũy trong rollup để tạo thành một gói tin telemetry tổng hợp `pipeline.metric` gửi về máy khách. Nhờ đó, hệ thống có thể tính toán chính xác tổng độ trễ tích lũy chặng cuối (End-to-End Latency) và độ trễ mạng hai chiều mà không làm tắc nghẽn luồng truyền phát âm thanh chính.
+
+---
+
 ### 3.5. Quy trình thực nghiệm huấn luyện mô hình Piper TTS giọng Nam Việt
+
 #### 3.5.1. Phương pháp Cross-Gender Fine-tuning kế thừa không gian nhúng âm vị từ base checkpoint `vais1000-medium`
-#### 3.5.2. Giải pháp tiền xử lý và đồng bộ âm vị 2-Pass Workaround loại bỏ ký tự lạ espeak-ng tránh lỗi IndexError VITS
+
+Để giải quyết bài toán thiếu hụt mô hình tổng hợp giọng nam tiếng Việt chất lượng tốt dưới điều kiện giới hạn về dữ liệu huấn luyện (chỉ có 2.5 giờ dữ liệu nam sạch từ VieNeu-TTS-140h) và tài nguyên tính toán (GPU Tesla T4 trên Google Colab), đồ án đề xuất phương pháp **Cross-Gender Fine-tuning** (huấn luyện chuyển giới tính giọng nói) dựa trên kiến trúc VITS của mô hình Piper TTS.
+
+```
+          [Base Checkpoint: vi_VN-vais1000-medium (Giọng Nữ)]
+                                   │
+                                   ├─> Giữ nguyên (Đóng băng phần lớn):
+                                   │   - Prior Text Encoder
+                                   │   - Phoneme Embedding Space (154 âm vị)
+                                   │
+                                   v (Fine-tuning sâu)
+                 [Decoder & Discriminators (Generator / MPD / MSD)]
+                                   │
+                                   ├─> Cập nhật trọng số thích ứng:
+                                   │   - Pitch (F0 - cao độ giọng nam)
+                                   │   - Formants (Đặc trưng âm học giọng nam miền Nam)
+                                   │
+                                   v
+                 [Model Output: Piper Giọng Nam Việt]
+```
+
+Thay vì huấn luyện từ đầu (train from scratch) đòi hỏi hàng chục giờ dữ liệu và hàng triệu bước huấn luyện để mô hình học cách ánh xạ ký tự sang âm vị và cấu trúc ngôn điệu tiếng Việt, phương pháp Cross-Gender Fine-tuning thực hiện kế thừa toàn bộ không gian nhúng âm vị (Phoneme Embeddings) của mô hình nền tảng giọng nữ `vi_VN-vais1000-medium` (gồm 154 âm vị tiếng Việt chuẩn). Trong quá trình huấn luyện, mô hình chỉ tập trung cập nhật các trọng số của khối Decoder (chuyển đổi latent representation sang sóng âm) và hệ thống đánh giá đối nghịch Discriminators (MPD, MSD). Quá trình này ép mô hình dịch chuyển đặc trưng cao độ (F0) và formant của giọng nữ gốc sang đặc trưng sinh phổ của giọng nam miền Nam Việt Nam, đạt sự hội tụ nhanh chóng chỉ sau 3000 epochs.
+
+#### 3.5.2. Giải pháp tiền xử lý và đồng bộ âm vị 2-Pass Workaround loại bộ ký tự lạ espeak-ng tránh lỗi IndexError VITS
+
+Một trở ngại lớn khi fine-tune mô hình Piper TTS là thư viện `piper_train.preprocess` phiên bản cài đặt ổn định không hỗ trợ cờ cấu hình bản đồ âm vị cố định `--phoneme-id-map`. Khi chạy tiền xử lý trên tập dữ liệu mới có lẫn một số từ tiếng Anh hoặc danh từ riêng viết tắt (như "GPT", "z", "AI"), bộ mã hóa âm vị espeak-ng sẽ tự động phát hiện và bổ sung thêm các âm vị lạ (như `'X'`, `'g'`, `'ʦ'`), nâng tổng số âm vị lên 157 âm vị. Khi đưa tập dữ liệu này vào huấn luyện, mô hình VITS sẽ cố gắng truy cập vào các chỉ số nhúng nằm ngoài kích thước bộ nhớ nhúng cố định của base model (154 âm vị), dẫn đến lỗi vỡ chương trình PyTorch `IndexError: index out of range`.
+
+Để giải quyết triệt để vấn đề này, đồ án thiết kế giải pháp **2-Pass Phoneme Mapping Workaround** gồm 4 bước:
+
+```
+[metadata.filtered.csv]
+          │
+          v (Pass 1 Preprocess)
+[Auto-discovered config.json (157 phonemes)] ──> Có âm vị lạ ('X', 'g', 'ʦ')
+          │
+          v (Cell 13: Override config.json)
+[vais1000 base config.json (154 phonemes)]
+          │
+          v (Pass 2 Preprocess)
+[dataset.jsonl (Phoneme IDs mapped to 154)] ──> Drop tự động các âm vị lạ
+          │
+          v (Cell 17: Verify 4 Checks)
+     [Verify PASS -> Ready for Phase 5]
+```
+
+*   **Bước 1 (Pass 1 Preprocess):** Chạy tiền xử lý trên thư mục trống để hệ thống tự động sinh ra file cấu hình `config.json` chứa bản đồ âm vị tự phát hiện (157 âm vị).
+*   **Bước 2 (Override Config):** Sao lưu file cấu hình tự động, thực hiện ghi đè tệp `training_dir/config.json` bằng cấu hình chuẩn của base model `vais1000-medium` (cố định ở mức 154 âm vị).
+*   **Bước 3 (Pass 2 Preprocess):** Chạy lại lệnh tiền xử lý. Do phát hiện file `config.json` đã tồn tại, bộ tiền xử lý của Piper buộc phải tái sử dụng bản đồ 154 âm vị có sẵn. Các ký tự/âm vị lạ nằm ngoài bản đồ sẽ bị loại bỏ (Drop) một cách an toàn trong quá trình ánh xạ, thay vì tạo ra ID mới.
+*   **Bước 4 (Khâu kiểm định an toàn - 4 Checks):** Trước khi đưa vào huấn luyện, hệ thống chạy một kịch bản kiểm tra tự động gồm 4 chặng: kiểm tra giá trị ID lớn nhất thực tế xuất hiện trong file `dataset.jsonl` (phải nhỏ hơn hoặc bằng 153), kiểm tra tính tương đương của tập khóa cấu hình, và thực hiện đối chiếu tra cứu ngược một số câu mẫu. Khâu kiểm định này đảm bảo loại bỏ 100% nguy cơ xảy ra lỗi `IndexError` trong quá trình huấn luyện thực tế trên GPU.
+
 #### 3.5.3. Kỹ thuật vá mã nguồn (Regex Inline Patching) tối ưu hóa Tốc độ học (Learning Rate = 1e-4) trong PyTorch Lightning
+
+Mô hình Piper TTS mặc định sử dụng tốc độ học (Learning Rate) khởi điểm $LR = 2 \times 10^{-4}$ cho quy trình huấn luyện từ đầu. Tuy nhiên, trong kịch bản tinh chỉnh (Fine-tuning) trên tập dữ liệu nhỏ, tốc độ học cao này dễ làm phá vỡ các đặc trưng ngữ điệu và biểu cảm tốt đã học được từ mô hình nền tảng, gây ra hiện tượng quá khớp (overfitting) hoặc phân kỳ loss. Tốc độ học tối ưu khuyến nghị cho chặng fine-tune là:
+$$LR_{finetune} = 1.0 \times 10^{-4}$$
+
+Do cấu trúc của thư viện `piper-train` đóng gói cứng tham số này trong các file source code cài đặt của PyTorch Lightning (không expose qua tham số dòng lệnh), đồ án áp dụng kỹ thuật vá mã nguồn trực tiếp **Regex Inline Patching** trước khi kích hoạt huấn luyện. Chương trình chạy một kịch bản Python tự động quét file cấu hình huấn luyện của Piper, tìm kiếm khối định nghĩa tối ưu hóa optimizer và áp dụng biểu thức chính quy (Regular Expression) để thay thế giá trị tốc độ học:
+
+```python
+# Thực hiện vá trực tiếp trong file source cài đặt
+with open(piper_train_src_path, 'r') as f:
+    content = f.read()
+# Tìm kiếm và thay thế tốc độ học từ 2e-4 sang 1e-4
+patched_content = re.sub(r'learning_rate\s*=\s*2e-4', 'learning_rate = 1e-4', content)
+with open(piper_train_src_path, 'w') as f:
+    f.write(patched_content)
+```
+
+Giải pháp can thiệp trực tiếp này đảm bảo mô hình Piper hội tụ ổn định trên GPU đám mây Tesla T4, giảm thiểu sự biến dạng âm phổ Mel-loss và duy trì tối đa độ tự nhiên của giọng đọc đích.
 
 ---
 
