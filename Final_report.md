@@ -306,53 +306,107 @@ Nội dung báo cáo Đồ án tốt nghiệp Kỹ sư AI được cấu trúc t
 
 ### 3.1. Thiết kế Hệ thống Tổng quát và Quy trình Kết nối
 
-#### 3.1.1. Luồng dữ liệu S2ST song hướng thời gian thực
+#### 3.1.1. Luồng xử lý tổng quát và hai chế độ hoạt động chính của hệ thống S2ST
 
-Hệ thống dịch giọng nói sang giọng nói thời gian thực song hướng (Speech-to-Speech Translation - S2ST) được thiết kế theo mô hình kiến trúc phân tán Máy khách - Máy chủ (Client-Server). Việc phân bổ tài nguyên tính toán được tối ưu hóa bằng cách đẩy các tác vụ nhận dạng (STT) và dịch thuật (MT) có độ phức tạp tính toán lớn lên GPU NVIDIA Tesla T4 của máy chủ Cloud. Ngược lại, chặng tổng hợp giọng nói (TTS) nhờ sử dụng mô hình ONNX siêu nhẹ sẽ được đẩy về thực thi trực tiếp tại CPU của máy khách local. Thiết kế này giúp triệt tiêu hoàn toàn độ trễ truyền tải băng thông âm thanh chặng cuối trên mạng internet, đồng thời đảm bảo khả năng đáp ứng song song cho nhiều người dùng.
+Hệ thống dịch giọng nói sang giọng nói thời gian thực song hướng (Speech-to-Speech Translation - S2ST) được xây dựng trên mô hình kiến trúc phân tán Máy khách (Client App) - Máy chủ (FastAPI Server) kết nối thông qua giao thức truyền thông song công WebSocket. Nhằm mang lại góc nhìn tổng quan nhất và giảm thiểu sự dài dòng từ các thư viện hay đặc tả kỹ thuật tầng thấp, quy trình vận hành của hệ thống được khái quát hóa thông qua sự tương tác giữa hai đầu Client - Server.
 
-Để liên kết các chặng xử lý và truyền nhận âm thanh liên tục, hệ thống sử dụng giao thức kết nối song công **WebSocket** (`/ws`). Sơ đồ luồng dữ liệu hai chiều (dịch xuôi Luồng 0 và dịch ngược Luồng 1) được thiết kế và mô tả chi tiết như sau:
+Để đáp ứng đa dạng nhu cầu thực tế, hệ thống được thiết kế hỗ trợ **hai chế độ hoạt động chính**:
+
+##### 1. Chế độ Hội thoại Hai chiều (Conversational Dual Mode / Two-way Mode)
+Chế độ này được sử dụng trong các cuộc họp trực tuyến (như Zoom, Google Meet, Microsoft Teams), nơi hai đối tác sử dụng ngôn ngữ khác nhau (Người dùng nội bộ nói tiếng Việt và Đối tác nước ngoài nói tiếng Anh) giao tiếp qua lại. 
+
+Quy trình xử lý song song hai tuyến dịch được khái quát như sau:
+*   **Tuyến dịch xuôi (Route 0: Việt $\rightarrow$ Anh):**
+    1.  *Ghi nhận đầu vào (Client):* Client thu âm từ Microphone vật lý của người dùng nội bộ (tiếng Việt), chia thành các gói tin âm thanh ngắn gửi lên Server.
+    2.  *Phân tích và Dịch thuật (Server):* Server nhận dữ liệu âm thanh, tự động phát hiện giọng nói (VAD), chuyển đổi thành văn bản tiếng Việt (STT) và dịch sang văn bản tiếng Anh (MT). Kết quả văn bản được gửi trả về hiển thị tại Client.
+    3.  *Phát âm thanh chặng cuối (Client):* Client nhận văn bản tiếng Anh dịch, thực hiện tổng hợp sang tiếng nói (TTS) và định tuyến phát âm thanh vào driver âm thanh ảo (Virtual Cable Input). Phần mềm họp trực tuyến (Zoom/Meet) thu âm từ Virtual Cable Output để truyền tới đối tác nước ngoài nghe.
+*   **Tuyến dịch ngược (Route 1: Anh $\rightarrow$ Việt):**
+    1.  *Ghi nhận đầu vào (Client):* Giọng đối tác nước ngoài nói tiếng Anh từ Zoom/Meet phát ra loa hệ thống. Client sử dụng cơ chế thu âm Loopback (WASAPI) thu lại luồng âm thanh số sạch này gửi lên Server.
+    2.  *Phân tích và Dịch thuật (Server):* Server nhận dữ liệu âm thanh tiếng Anh, thực hiện VAD, nhận dạng thành văn bản tiếng Anh (STT) và dịch sang văn bản tiếng Việt (MT). Kết quả văn bản dịch được gửi trả về hiển thị tại Client.
+    3.  *Phát âm thanh chặng cuối (Client):* Client nhận văn bản tiếng Việt dịch, tổng hợp sang tiếng nói giọng nam miền Nam (TTS) và định tuyến phát ra loa vật lý hoặc tai nghe của người dùng nội bộ để nghe trực tiếp.
+
+Sơ đồ quy trình tổng quát chế độ Hội thoại Hai chiều (Conversational Dual Mode) được mô tả trong Hình 3.1:
 
 ```mermaid
-sequenceDiagram
-    autonumber
-    actor User as Người dùng nội bộ (VI)
-    participant Client as Ứng dụng PySide6 (Windows)
-    participant WS as Kênh WebSocket (Song công)
-    participant Server as Server FastAPI (GPU T4 Cloud)
-    actor Partner as Đối tác nước ngoài (EN)
+graph TD
+    %% Định nghĩa các lớp
+    subgraph Client [ỨNG DỤNG MÁY KHÁCH - CLIENT APP]
+        MicCapture[🎙️ Thu âm Microphone<br/>giọng Việt]
+        LoopbackCapture[🔊 Thu âm WASAPI Loopback<br/>giọng Anh từ Zoom/Meet]
+        TTS_EN[🔊 Tổng hợp TTS tiếng Anh]
+        TTS_VI[🔊 Tổng hợp TTS tiếng Việt]
+        RoutePlayer[🎛️ Bộ điều phối phát RoutePlayer]
+        VirtualCable[🔈 Cổng phát ảo VB-Cable<br/>truyền vào Zoom/Meet]
+        PhysicalSpeaker[🎧 Loa/Tai nghe vật lý<br/>người dùng nghe]
+    end
 
-    %% Luồng dịch xuôi (VI -> EN)
-    Note over User, Partner: LUỒNG 0: DỊCH XUÔI (VI -> EN)
-    User->>Client: Nói tiếng Việt
-    Client->>Client: Ghi âm Micro vật lý (PCM16 16kHz Mono, chunk 200ms)
-    Client->>WS: Gửi khung nhị phân 0x02 (chứa timestamp + audio chunk)
-    WS->>Server: Truyền tải streaming thời gian thực
-    Server->>Server: Phân đoạn Silero VAD -> Trích xuất cụm thoại (utterance)
-    Server->>Server: Nhận dạng PhoWhisper -> Văn bản tiếng Việt
-    Server->>WS: Trả kết quả JSON stt.final
-    WS->>Client: Hiển thị văn bản gốc tiếng Việt lên giao diện
-    Server->>Server: Dịch máy NLLB-200 -> Văn bản tiếng Anh
-    Server->>WS: Trả kết quả JSON mt.result
-    WS->>Client: Hiển thị văn bản dịch tiếng Anh
-    Client->>Client: Suy luận Piper TTS trên CPU -> Khung sóng âm tiếng Anh
-    Client->>Client: RoutePlayer (Route 0) -> Đẩy vào thiết bị phát ảo VB-Cable Input
-    Client->>Partner: Trình hội thoại (Zoom/Meet) đọc CABLE Output làm Mic -> Loa đối tác
+    subgraph Connection [GIAO THỨC TRUYỀN DẪN WEBSOCKET]
+        WS_Route0{{Kênh truyền Route 0}}
+        WS_Route1{{Kênh truyền Route 1}}
+    end
 
-    %% Luồng dịch ngược (EN -> VI)
-    Note over User, Partner: LUỒNG 1: DỊCH NGƯỢC (EN -> VI)
-    Partner->>Client: Nói tiếng Anh qua Zoom/Meet
-    Client->>Client: WASAPI Loopback Capture (Thu âm hệ thống PCM16 16kHz)
-    Client->>WS: Gửi khung nhị phân 0x02 (Định vị Route 1 + audio chunk)
-    WS->>Server: Truyền tải streaming thời gian thực
-    Server->>Server: Phân đoạn Silero VAD -> Trích xuất cụm thoại (utterance)
-    Server->>Server: Nhận dạng Faster-Whisper -> Văn bản tiếng Anh
-    Server->>WS: Trả kết quả JSON stt.final (tiếng Anh)
-    WS->>Client: Hiển thị văn bản đối tác lên giao diện
-    Server->>Server: Dịch máy NLLB-200 -> Văn bản tiếng Việt
-    Server->>WS: Trả kết quả JSON mt.result (tiếng Việt)
-    WS->>Client: Hiển thị văn bản dịch tiếng Việt
-    Client->>Client: Suy luận Piper TTS trên CPU -> Khung sóng âm tiếng Việt (Nam)
-    Client->>Client: RoutePlayer (Route 1) -> Phát ra Loa/Tai nghe vật lý của Người dùng
+    subgraph Server [MÁY CHỦ GPU CLOUD - SERVER FASTAPI]
+        STT_VI[🤖 STT PhoWhisper]
+        MT_VI_EN[🤖 MT NLLB-200 VI-EN]
+        STT_EN[🤖 STT Faster-Whisper]
+        MT_EN_VI[🤖 MT NLLB-200 EN-VI]
+    end
+
+    %% Tuyến dịch xuôi (Route 0)
+    MicCapture -->|1. Gửi Audio VI| WS_Route0
+    WS_Route0 -->|2. Forward Audio| STT_VI
+    STT_VI -->|3. Văn bản tiếng Việt| MT_VI_EN
+    MT_VI_EN -->|4. Trả văn bản tiếng Anh dịch| WS_Route0
+    WS_Route0 -->|5. Trả kết quả| TTS_EN
+    TTS_EN -->|6. Âm thanh tiếng Anh| RoutePlayer
+    RoutePlayer -->|Kênh Route 0| VirtualCable
+
+    %% Tuyến dịch ngược (Route 1)
+    LoopbackCapture -->|1. Gửi Audio EN| WS_Route1
+    WS_Route1 -->|2. Forward Audio| STT_EN
+    STT_EN -->|3. Văn bản tiếng Anh| MT_EN_VI
+    MT_EN_VI -->|4. Trả văn bản tiếng Việt dịch| WS_Route1
+    WS_Route1 -->|5. Trả kết quả| TTS_VI
+    TTS_VI -->|6. Âm thanh tiếng Việt Nam| RoutePlayer
+    RoutePlayer -->|Kênh Route 1| PhysicalSpeaker
+```
+
+##### 2. Chế độ Đơn hướng Xem Video (System/Video Single Mode)
+Chế độ này được thiết kế dành riêng cho nhu cầu cá nhân như xem video trên YouTube, xem phim trực tuyến (Netflix, website phim), hoặc nghe các bài giảng video tiếng nước ngoài. Ở chế độ này, Micro vật lý của người dùng hoàn toàn được tắt bỏ (disable) để cô lập nhiễu phòng học/phòng làm việc và tiết kiệm băng thông.
+
+Quy trình xử lý dịch đơn hướng (tiếng Anh sang tiếng Việt) được khái quát như sau:
+1.  *Ghi nhận đầu vào (Client):* Trình duyệt hoặc phần mềm phát video đang phát tiếng Anh ra loa máy tính. Client sử dụng cơ chế thu âm Loopback (WASAPI) thu trực tiếp luồng âm thanh số này và gửi lên Server thông qua kênh WebSocket Route 1.
+2.  *Phân tích và Dịch thuật (Server):* Server nhận dữ liệu âm thanh tiếng Anh chặng streaming, thực hiện VAD, nhận dạng giọng nói (STT) sang văn bản tiếng Anh, sau đó dịch máy (MT) sang văn bản tiếng Việt. Bản dịch văn bản được gửi trả về hiển thị dưới dạng phụ đề thời gian thực trên màn hình Client.
+3.  *Phát âm thanh chặng cuối (Client):* Client nhận văn bản dịch tiếng Việt, tổng hợp sang giọng nói tiếng Việt (TTS) và phát trực tiếp ra loa vật lý hoặc tai nghe của người dùng. Người dùng có thể vừa đọc phụ đề tiếng Việt vừa nghe giọng nói dịch song hành cùng tiến trình video.
+
+Sơ đồ quy trình tổng quát chế độ Xem Video Đơn hướng (System/Video Single Mode) được mô tả trong Hình 3.2:
+
+```mermaid
+graph TD
+    %% Định nghĩa các lớp
+    subgraph VideoSource [NGUỒN VIDEO HỆ THỐNG]
+        YT_Browser[📺 Video YouTube / Trình duyệt]
+    end
+
+    subgraph ClientApp [ỨNG DỤNG MÁY KHÁCH - CLIENT APP]
+        LoopbackCap[🔊 Thu âm WASAPI Loopback<br/>chỉ thu tiếng Anh hệ thống]
+        TTS_VI_Single[🔊 Tổng hợp TTS tiếng Việt]
+        RoutePlayerSingle[🎛️ Bộ điều phối phát RoutePlayer]
+        PhysicalSpeakerSingle[🎧 Loa/Tai nghe vật lý<br/>người dùng nghe]
+    end
+
+    subgraph ServerApp [MÁY CHỦ GPU CLOUD - SERVER FASTAPI]
+        STT_EN_Single[🤖 STT Faster-Whisper]
+        MT_EN_VI_Single[🤖 MT NLLB-200 EN-VI]
+    end
+
+    %% Luồng dữ liệu Single Mode
+    YT_Browser -->|Phát tiếng Anh ra loa| LoopbackCap
+    LoopbackCap -->|1. Gửi Audio EN qua WebSocket Route 1| STT_EN_Single
+    STT_EN_Single -->|2. Văn bản tiếng Anh| MT_EN_VI_Single
+    MT_EN_VI_Single -->|3. Trả văn bản dịch tiếng Việt qua WebSocket| TTS_VI_Single
+    TTS_VI_Single -->|4. Âm thanh tiếng Việt Nam| RoutePlayerSingle
+    RoutePlayerSingle -->|Kênh Route 1| PhysicalSpeakerSingle
 ```
 
 #### 3.1.2. Cơ chế đồng bộ hóa thời gian và luồng truyền tải dữ liệu
