@@ -32,38 +32,84 @@
 
 # CHƯƠNG 1. GIỚI THIỆU ĐỀ TÀI
 
-> Nguồn: phần "LỜI MỞ ĐẦU" trong docx, tái cấu trúc theo outline 1.1–1.5.
+> Nguồn: phần "LỜI MỞ ĐẦU" trong docx, bê **đầy đủ** và tái cấu trúc theo outline. (Bổ sung 1.5 Cách tiếp cận & PPNC để giữ trọn nội dung gốc; 1.6 Bố cục viết mới.)
 
 ## 1.1. Lý do chọn đề tài
 
 Trong bối cảnh toàn cầu hóa và sự phát triển mạnh mẽ của công nghệ số, các nền tảng họp trực tuyến như Zoom, Google Meet hay Microsoft Teams đã trở thành công cụ quan trọng trong hoạt động giao tiếp và hợp tác quốc tế. Tuy nhiên, khác biệt ngôn ngữ vẫn là một rào cản lớn khiến quá trình trao đổi thông tin gặp nhiều khó khăn. Các giải pháp truyền thống như thuê phiên dịch viên tuy mang lại chất lượng dịch thuật cao nhưng thường tốn kém chi phí, khó triển khai linh hoạt và tiềm ẩn những vấn đề liên quan đến bảo mật thông tin. Trong khi đó, các công cụ dịch văn bản thông thường yêu cầu người dùng thao tác thủ công, làm gián đoạn dòng hội thoại và không đáp ứng được nhu cầu giao tiếp thời gian thực.
 
-Trước thực tế đó, hệ thống dịch giọng nói sang giọng nói thời gian thực (Speech-to-Speech Translation – S2ST) được xem là một hướng tiếp cận đầy tiềm năng. Tuy nhiên, việc triển khai hệ thống trong môi trường họp trực tuyến vẫn đối mặt với nhiều thách thức: độ trễ phát sinh qua các giai đoạn STT → NMT → TTS có thể làm giảm tính tự nhiên của hội thoại; đặc điểm thanh điệu và cách ngắt nghỉ trong tiếng Việt khiến hệ thống dễ xác định sai điểm kết thúc câu; nguồn mô hình tổng hợp giọng nam tiếng Việt chất lượng cao, nhẹ còn hạn chế; và hiện tượng phản hồi âm học khi âm thanh đã dịch bị micro thu lại gây vòng lặp dịch không mong muốn.
+Trước thực tế đó, hệ thống dịch giọng nói sang giọng nói thời gian thực (Speech-to-Speech Translation – S2ST) được xem là một hướng tiếp cận đầy tiềm năng. Tuy nhiên, việc triển khai hệ thống trong môi trường họp trực tuyến vẫn đối mặt với nhiều thách thức. Độ trễ phát sinh qua các giai đoạn nhận dạng tiếng nói (STT), dịch máy (NMT) và tổng hợp tiếng nói (TTS) có thể làm giảm tính tự nhiên của cuộc hội thoại nếu không được tối ưu hiệu quả. Bên cạnh đó, đặc điểm thanh điệu và cách ngắt nghỉ trong tiếng Việt khiến hệ thống dễ xác định sai điểm kết thúc câu, ảnh hưởng đến chất lượng nhận dạng và dịch thuật. Ngoài ra, nguồn tài nguyên mô hình tổng hợp giọng nam tiếng Việt chất lượng cao, có khả năng vận hành trên thiết bị cấu hình thấp vẫn còn hạn chế. Một vấn đề thực tế khác là hiện tượng phản hồi âm học khi âm thanh đã được dịch tiếp tục bị micro thu nhận, dẫn đến vòng lặp dịch không mong muốn và gây nhiễu trong quá trình giao tiếp.
 
-Do đó, nghiên cứu các giải pháp giảm độ trễ, nâng cao độ chính xác nhận dạng, phát triển mô hình TTS phù hợp và kiểm soát phản hồi âm học là cần thiết, làm cơ sở xây dựng một hệ thống dịch giọng nói thời gian thực có tính ứng dụng cao. ✅
+Do đó, việc nghiên cứu các giải pháp giảm độ trễ xử lý, nâng cao độ chính xác nhận dạng, phát triển mô hình tổng hợp giọng nói phù hợp và kiểm soát hiệu quả hiện tượng phản hồi âm học là những yêu cầu cần thiết. Đây cũng là cơ sở quan trọng để xây dựng một hệ thống dịch giọng nói thời gian thực có tính ứng dụng cao, đáp ứng nhu cầu giao tiếp đa ngôn ngữ trong môi trường trực tuyến hiện nay. ✅
 
 ## 1.2. Phát biểu bài toán
 
-- 1.2.1. Nhận dạng tiếng nói (STT) dạng streaming trên luồng âm thanh liên tục không mất ngữ cảnh.
-- 1.2.2. Dịch máy hội thoại (NMT) bảo toàn ngữ nghĩa và tính tự nhiên của vế nói ngắn, rời rạc.
-- 1.2.3. Thiếu hụt mô hình TTS giọng nam Việt chất lượng cao, dung lượng nhẹ phục vụ thời gian thực.
-- 1.2.4. Cô lập luồng thu/phát chống vòng lặp phản hồi âm học (feedback loop) trong môi trường họp. ✅
+Từ bối cảnh và những thách thức nêu trên, đề tài xác định bốn bài toán cốt lõi cần giải quyết:
+
+**1.2.1. Nhận dạng tiếng nói (STT) dạng streaming trên luồng âm thanh liên tục.** Hệ thống phải nhận dạng tiếng nói trên luồng âm thanh được truyền liên tục theo từng đoạn ngắn thay vì trên tệp hoàn chỉnh, đồng thời duy trì ngữ cảnh hội thoại giữa các lần nhận dạng để không làm mất ý nghĩa của câu nói.
+
+**1.2.2. Dịch máy hội thoại đa ngữ (NMT) trong môi trường thời gian thực.** Văn bản đầu vào sinh ra từ tầng STT thường ngắn, rời rạc và chưa hoàn chỉnh về ngữ pháp do người nói ngắt nhịp, lấy hơi; bài toán đặt ra là dịch sao cho bảo toàn ngữ nghĩa và tính tự nhiên của vế nói trong khi vẫn đáp ứng yêu cầu độ trễ thấp.
+
+**1.2.3. Thiếu hụt mô hình tổng hợp tiếng nói (TTS) giọng nam tiếng Việt.** Cần một mô hình TTS giọng nam tiếng Việt chất lượng cao, dung lượng nhẹ, có thể chạy thời gian thực trên thiết bị phổ thông — trong khi tài nguyên công khai hiện có còn rất hạn chế.
+
+**1.2.4. Cô lập luồng âm thanh thu/phát chống vòng lặp phản hồi âm học.** Hệ thống phải tách biệt luồng âm thanh đầu vào và đầu ra để âm thanh đã dịch phát ra từ loa không bị micro thu ngược trở lại, tránh hiện tượng feedback loop gây nhiễu trong môi trường họp trực tuyến. ✅
 
 ## 1.3. Mục tiêu và Đóng góp của đề tài
 
-Đồ án hướng tới các mục tiêu chính: (1) Xây dựng hệ thống S2ST thời gian thực theo mô hình Client–Server qua WebSocket, xử lý gần thời gian thực, giảm độ trễ; (2) Nghiên cứu các giải pháp tối ưu xử lý âm thanh: phát hiện khoảng dừng, phân đoạn câu, quản lý bộ đệm dịch; (3) Xây dựng và tinh chỉnh mô hình TTS tiếng Việt giọng nam trên nền Piper, dung lượng nhỏ, chạy trên máy phổ thông; (4) Thiết kế cơ chế kiểm soát phản hồi âm học; (5) Đánh giá hiệu năng qua độ trễ, chất lượng STT, độ chính xác dịch và chất lượng âm thanh tổng hợp. ✅
+Đồ án hướng tới các mục tiêu chính sau:
+
+- Xây dựng hệ thống dịch giọng nói sang giọng nói thời gian thực (S2ST) theo mô hình Client–Server, cho phép hai người dùng sử dụng ngôn ngữ khác nhau có thể giao tiếp trực tiếp thông qua kết nối WebSocket. Hệ thống cần đảm bảo khả năng xử lý gần thời gian thực, giảm thiểu độ trễ để duy trì tính tự nhiên của cuộc hội thoại.
+- Nghiên cứu và triển khai các giải pháp tối ưu cho quá trình xử lý dữ liệu âm thanh, bao gồm phát hiện khoảng dừng trong lời nói, phân đoạn câu và quản lý bộ đệm dịch. Mục tiêu là rút ngắn thời gian phản hồi của hệ thống nhưng vẫn đảm bảo nội dung dịch đầy đủ và chính xác.
+- Xây dựng và tinh chỉnh mô hình tổng hợp tiếng nói tiếng Việt giọng nam dựa trên nền tảng Piper TTS. Mô hình được tối ưu để có chất lượng phát âm tự nhiên, dung lượng nhỏ và có thể hoạt động trên các máy tính phổ thông mà không yêu cầu phần cứng chuyên dụng.
+- Thiết kế cơ chế kiểm soát phản hồi âm học trong môi trường họp trực tuyến nhằm ngăn chặn hiện tượng âm thanh dịch phát ra từ loa bị thu ngược trở lại micro. Giải pháp cần đảm bảo hệ thống hoạt động ổn định mà không làm ảnh hưởng đến trải nghiệm của người dùng.
+- Đánh giá hiệu năng của hệ thống thông qua các tiêu chí như độ trễ xử lý, chất lượng nhận dạng tiếng nói, độ chính xác của bản dịch và chất lượng âm thanh tổng hợp, từ đó xác định khả năng ứng dụng của hệ thống trong các tình huống giao tiếp trực tuyến thực tế.
+
+**Đóng góp chính của đề tài:** (1) một hệ thống pipeline S2ST song hướng thời gian thực được tối ưu độ trễ, tích hợp đầy đủ ba tầng STT–MT–TTS; và (2) một mô hình Piper TTS giọng nam tiếng Việt dung lượng nhẹ, chất lượng tốt, có thể chạy thời gian thực trên CPU phổ thông, đóng góp cho cộng đồng nghiên cứu. ⚠️ *(mục Đóng góp tổng hợp từ kết luận docx — rà lại sau khi chốt Chương 4/5)*
 
 ## 1.4. Đối tượng và Phạm vi nghiên cứu
 
-**Đối tượng:** các công nghệ và mô hình AI cho bài toán S2ST (STT, NMT, TTS), phương pháp VAD, cơ chế truyền dữ liệu thời gian thực Client–Server và các giải pháp xử lý âm thanh.
+**Đối tượng nghiên cứu.** Đồ án tập trung nghiên cứu các công nghệ và mô hình trí tuệ nhân tạo phục vụ bài toán dịch giọng nói sang giọng nói thời gian thực, bao gồm nhận dạng tiếng nói, dịch máy và tổng hợp tiếng nói. Bên cạnh đó, đề tài cũng nghiên cứu các phương pháp phát hiện hoạt động giọng nói, cơ chế truyền dữ liệu thời gian thực giữa máy khách và máy chủ, cũng như các giải pháp xử lý âm thanh nhằm nâng cao chất lượng và tính ổn định của hệ thống trong môi trường hội thoại trực tuyến.
 
-**Phạm vi:** hệ thống dịch song hướng cặp Việt–Anh; mô hình Client–Server (xử lý AI trên server, client Windows); điều kiện tài nguyên giới hạn (1 GPU tầm trung phía server, máy cá nhân phổ thông phía client); xây dựng mô hình TTS giọng nam Việt từ dữ liệu đã tiền xử lý; đánh giá qua độ trễ, chất lượng STT, độ chính xác dịch và chất lượng âm thanh đầu ra.
+**Phạm vi nghiên cứu.**
 
-*Cách tiếp cận & phương pháp nghiên cứu (kiến trúc phân tán Client–Server; xử lý bất đồng bộ + preload; transfer learning cho TTS; kiểm soát phản hồi âm học qua thiết bị âm thanh ảo) — đã có prose trong docx, đưa vào 1.4 hoặc tách 1.4.x.* ✅
+- Xây dựng hệ thống dịch giọng nói song hướng cho cặp ngôn ngữ tiếng Việt và tiếng Anh.
+- Triển khai hệ thống theo mô hình Client–Server, trong đó các tác vụ xử lý trí tuệ nhân tạo được thực hiện trên máy chủ và người dùng tương tác thông qua ứng dụng máy khách trên hệ điều hành Windows.
+- Nghiên cứu và đánh giá hệ thống trong điều kiện tài nguyên tính toán giới hạn, sử dụng một GPU tầm trung cho phía máy chủ và các máy tính cá nhân phổ thông cho phía người dùng.
+- Xây dựng mô hình tổng hợp tiếng nói tiếng Việt giọng nam dựa trên dữ liệu giọng đọc tiếng Việt đã được tiền xử lý và chuẩn hóa.
+- Đánh giá hiệu năng hệ thống dựa trên các tiêu chí như độ trễ xử lý, chất lượng nhận dạng tiếng nói, độ chính xác dịch thuật và chất lượng âm thanh đầu ra. ✅
 
-## 1.5. Bố cục của Báo cáo
+## 1.5. Cách tiếp cận và Phương pháp nghiên cứu
 
-Tóm tắt nội dung 5 chương + sơ đồ liên kết logic giữa các chương. ❌ *(viết mới, đợi đến khi nào viết xong các chương rồi viết phần này sau.)*
+### 1.5.1. Cách tiếp cận
+
+Để đáp ứng yêu cầu xử lý thời gian thực trong điều kiện tài nguyên tính toán hạn chế, đề tài áp dụng một số hướng tiếp cận chính sau:
+
+- **Tiếp cận kiến trúc phân tán Client–Server:** Các tác vụ AI có yêu cầu tính toán cao như nhận dạng tiếng nói (STT) và dịch máy (NMT) được thực hiện trên máy chủ có GPU, còn máy khách đảm nhận việc thu/phát, định tuyến âm thanh và hiển thị giao diện. Trong thiết kế ban đầu, tác vụ tổng hợp tiếng nói (TTS) dự kiến đặt tại máy khách nhằm tối ưu độ trễ và dự phòng cho trường hợp máy chủ không đủ VRAM khi chạy các mô hình lớn; bản thân mô hình TTS cũng đủ nhẹ để chạy trên CPU của máy khách. Tuy nhiên, khi triển khai thực tế, máy chủ có đủ tài nguyên nên TTS được đặt luôn trên GPU máy chủ cùng với STT và NMT. Cách tiếp cận phân tán này giúp tận dụng hiệu quả tài nguyên phần cứng giữa hai phía và giữ cho ứng dụng máy khách nhẹ, dễ triển khai trên thiết bị phổ thông.
+- **Tiếp cận xử lý bất đồng bộ:** Hệ thống được thiết kế theo cơ chế xử lý song song giữa các thành phần nhằm giảm thời gian chờ giữa các giai đoạn nhận dạng, dịch và tổng hợp tiếng nói. Đồng thời, các mô hình được khởi tạo sẵn khi hệ thống bắt đầu hoạt động để hạn chế độ trễ phát sinh trong lần suy luận đầu tiên.
+- **Tiếp cận chuyển giao học tập cho mô hình tổng hợp tiếng nói:** Thay vì huấn luyện mô hình từ đầu, đề tài sử dụng phương pháp tinh chỉnh từ mô hình đã được huấn luyện trước nhằm xây dựng giọng nam tiếng Việt từ tập dữ liệu có quy mô hạn chế. Cách tiếp cận này giúp rút ngắn thời gian huấn luyện, giảm yêu cầu dữ liệu và vẫn đảm bảo chất lượng âm thanh đầu ra.
+- **Tiếp cận kiểm soát phản hồi âm học:** Hệ thống sử dụng cơ chế tách biệt các luồng âm thanh đầu vào và đầu ra thông qua thiết bị âm thanh ảo. Giải pháp này xử lý **triệt để** bài toán vòng lặp ở mức phần mềm: khi ứng dụng thu âm thanh hệ thống rồi phát lại âm thanh đã dịch (vốn cũng là âm thanh hệ thống), việc định tuyến tách biệt qua thiết bị âm thanh ảo bảo đảm âm phát ra không bị thu ngược trở lại để tạo thành vòng lặp dịch. Riêng hiện tượng vọng âm ở mức phần cứng — loa vật lý phát ra bị micro thu lại — không thể loại bỏ bằng định tuyến phần mềm (ví dụ khi người dùng dùng loa và micro mặc định của laptop); do đó trong quá trình demo và sử dụng, người dùng được yêu cầu dùng tai nghe để tách biệt loa với micro, qua đó giải quyết triệt để vấn đề này.
+
+Thông qua các hướng tiếp cận trên, đề tài hướng đến mục tiêu xây dựng một hệ thống dịch giọng nói thời gian thực có độ trễ thấp, hoạt động ổn định và có khả năng triển khai trên hạ tầng phần cứng phổ thông. ✅
+
+### 1.5.2. Phương pháp nghiên cứu
+
+**Phương pháp nghiên cứu lý thuyết.** Tiến hành nghiên cứu, tổng hợp và phân tích các tài liệu, công trình khoa học liên quan đến lĩnh vực xử lý tiếng nói và trí tuệ nhân tạo. Nội dung nghiên cứu tập trung vào các mô hình nhận dạng tiếng nói, dịch máy và tổng hợp tiếng nói hiện đại, đồng thời tìm hiểu các kiến trúc học sâu và kỹ thuật tối ưu hóa được sử dụng trong các hệ thống dịch giọng nói thời gian thực.
+
+**Phương pháp thực nghiệm và xây dựng hệ thống.** Trên cơ sở lý thuyết đã nghiên cứu, đề tài tiến hành thiết kế và xây dựng hệ thống dịch giọng nói song hướng theo mô hình Client–Server. Quá trình thực hiện bao gồm thu thập và tiền xử lý dữ liệu, tinh chỉnh mô hình tổng hợp tiếng nói tiếng Việt giọng nam, triển khai các thành phần nhận dạng tiếng nói, dịch máy và tổng hợp tiếng nói, đồng thời phát triển ứng dụng máy khách phục vụ việc thu nhận, truyền tải và phát lại âm thanh trong thời gian thực. Bên cạnh đó, các giải pháp tối ưu độ trễ, quản lý luồng dữ liệu và kiểm soát phản hồi âm học cũng được nghiên cứu, triển khai và đánh giá thông qua nhiều kịch bản thử nghiệm khác nhau nhằm nâng cao hiệu năng của hệ thống.
+
+**Phương pháp đánh giá và kiểm chứng.** Hiệu năng của hệ thống được đánh giá thông qua cả phương pháp định lượng và định tính. Về mặt định lượng, đề tài đo lường các chỉ số như độ trễ xử lý, độ chính xác của mô hình nhận dạng tiếng nói, tốc độ tổng hợp tiếng nói và chất lượng âm thanh đầu ra bằng các công cụ đánh giá phù hợp. Về mặt định tính, hệ thống được khảo sát trên nhóm người dùng thử nghiệm nhằm đánh giá mức độ tự nhiên, độ rõ ràng và khả năng đáp ứng trong quá trình giao tiếp thực tế. Kết quả thu được là cơ sở để đánh giá tính khả thi và hiệu quả của hệ thống được đề xuất. ✅
+
+## 1.6. Bố cục của Báo cáo
+
+Báo cáo được tổ chức thành năm chương:
+
+- **Chương 1 – Giới thiệu đề tài:** trình bày bối cảnh, lý do chọn đề tài, phát biểu bài toán, mục tiêu và đóng góp, đối tượng và phạm vi, cách tiếp cận và phương pháp nghiên cứu.
+- **Chương 2 – Tổng quan tài liệu và Cơ sở lý thuyết:** trình bày nền tảng lý thuyết về STT (Whisper/PhoWhisper), NMT (NLLB-200), TTS (VITS/Piper), VAD (Silero), các công nghệ – thư viện sử dụng, cùng các nghiên cứu liên quan và khoảng trống nghiên cứu.
+- **Chương 3 – Phương pháp nghiên cứu đề xuất:** trình bày kiến trúc hệ thống Client–Server, thiết kế client và cơ chế cô lập loopback, thiết kế server phân tầng hướng engine, pipeline streaming STT–MT–TTS và quy trình fine-tuning Piper TTS giọng nam.
+- **Chương 4 – Kết quả thực nghiệm:** trình bày môi trường và kịch bản thử nghiệm, quy trình xử lý dữ liệu và kiểm soát chất lượng, các chỉ số đánh giá, kết quả thực nghiệm hệ thống và kết quả huấn luyện mô hình Piper TTS.
+- **Chương 5 – Kết luận và Hướng phát triển:** tổng kết đóng góp, nêu hạn chế và đề xuất hướng phát triển trong tương lai.
+
+❌ *(mới viết — rà lại lần cuối sau khi hoàn thiện toàn bộ các chương để khớp tiêu đề/thứ tự thực tế)*
 
 ---
 
