@@ -142,3 +142,32 @@ Hướng dẫn của Khoa **không quy định typography chi tiết** (chỉ qu
 - [ ] 4.4. User làm các task trong `user_manual_action.md` (placeholder, ảnh, `Ctrl+A→F9` cập nhật field).
 - [ ] 4.5. Kiểm tra bản render cuối trong Word (số trang, danh mục, định dạng).
 - **Kết quả GĐ4:** `DATN_BT.docx` hoàn chỉnh nộp được.
+
+---
+
+## 10. KHO DỮ KIỆN KỸ THUẬT ĐÃ VERIFY (đối chiếu code, read-only — cập nhật 2026-06-22)
+
+> Để các phiên sau khỏi quét lại codebase. Tất cả đã đối chiếu qua subagent với 2 repo con.
+
+**Bản đồ file code quan trọng (GradProject):**
+- STT: `server/core_ai/stt_engine/base.py`, `faster_whisper_engine.py`, `stt_engine.py` (facade)
+- VAD: `server/core_ai/vad/silero_vad.py`; cắt câu: `server/api/websocket/streaming/stt_session_manager.py`
+- MT: `server/core_ai/mt_engine/base.py`, `models_engine/nllb_ct2_engine.py`
+- TTS: `server/core_ai/tts_engine/tts_engine.py`, `models_engine/piper_onnx_engine.py`, `selection/factory.py`
+- Runtime: `server/core_ai/stt_engine/runtime/execution_lane.py`; WebSocket: `server/api/websocket/router.py`
+- Client: `client/main.py`, `audio/pyaudio_manager.py`, `audio/capture_loopback.py`, `audio/player.py`, `audio/install_vb_cable.py`, `gui/components/settings_dialog.py`
+
+**Thông số ĐÃ XÁC MINH KHỚP (dùng tự tin):**
+- STT VI: **PhoWhisper-medium** (CTranslate2, `phowhisper-medium-ct2`); STT EN: **Faster-Whisper small** đa ngôn ngữ, compute **float16** (CPU: float32).
+- Đầu vào STT: PCM **16 kHz**, chunk **200 ms**.
+- VAD: **Silero VAD**; ngưỡng im lặng **450 ms** (`SILENCE_THRESHOLD_FRAMES=2.25`); **Hangover 2 frames (~400 ms)**; ngưỡng xác suất **0.5**.
+- MT: **NLLB-200 distilled-600M** qua **CTranslate2**, compute **int8**.
+- TTS: nền **vi_VN-vais1000-medium**, **4 giọng** (vi/en × nam/nữ), ONNX, **22050 Hz**, chạy trên **server (GPU)**.
+- Server: **FastAPI + WebSocket** (`/ws`); có **Facade** 3 engine, **Preload/Warmup**, **ExecutionLane** (thread pool max_workers=4 + operation_lock).
+- Client: **PySide6 + qasync**, **PyAudio**, **SoundCard** (WASAPI loopback), **Route 0** (mic/dịch đi) / **Route 1** (loopback/âm cuộc họp).
+- **ĐỊNH TUYẾN ÂM THANH = VoiceMeeter Banana** (KHÔNG còn dùng VB-Audio Cable — VB-Cable một cáp đơn không đủ chống vòng lặp tự dịch). VoiceMeeter cho nhiều bus ảo: Route 0 → `VoiceMeeter Input` → bus B1 (mic ảo cho Meet/Zoom); Route 1 → `VoiceMeeter Aux Input` (thu âm cuộc họp). Điều khiển qua `VoicemeeterRemote64.dll`. File: `client/audio/voicemeeter_controller.py`, `install_voicemeeter.py`, `uninstall_voicemeeter.py`, `virtual_setup.py`, `device_router.py`; doc `client/docs/implementation_plan_voicemeeter_routing.md`. Hai chế độ: `system` (Hệ thống) & `conversation` (Hội thoại). `install_vb_cable.py` & `shared_docs/audio_routing_solution.md` là DI SẢN CŨ (VB-Cable), bỏ qua.
+  - ⚠️ CHƯƠNG 3 còn nhắc "VB-Cable" ở 3.1.1 (mô tả chế độ 2 chiều) và 3.2.3 → phải sửa thành VoiceMeeter khi viết Ch3.
+
+**⚠️ HAI ĐIỂM LỆCH CẦN XỬ LÝ Ở CHƯƠNG SAU (không thuộc Ch1–2):**
+1. **TTS FP16 vs FP32:** code triển khai hiện chạy **FP32**; bản FP16 bị disable do lỗi Cast node của ONNX Runtime. Báo cáo Chương 4 (4.5.2) đang trình bày kết quả lượng tử hóa FP16 (63,5→32,1 MB, RTF 0,120). → Cần làm rõ ở Ch4: FP16 là *kết quả thực nghiệm đo được*, nhưng *bản deploy dùng FP32*. (warmup_language mặc định "en" có pitfall với PhoWhisper chỉ hỗ trợ vi — lưu ý khi viết Ch3.)
+2. **2-Pass Phoneme Mapping & espeak-ng:** KHÔNG tìm thấy trong code Python của 2 repo (có thể nằm trong notebook finetune hoặc trong dependency piper-train). → Khi làm Chương 3 (mục 3.5.2) phải kiểm tra `piper_vi_vais1000_finetuning/notebooks/`, `scripts/` để xác minh, nếu không có thì chỉnh cách diễn đạt.
