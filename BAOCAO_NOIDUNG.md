@@ -115,49 +115,71 @@ Báo cáo được tổ chức thành năm chương:
 
 # CHƯƠNG 2. TỔNG QUAN TÀI LIỆU VÀ CƠ SỞ LÝ THUYẾT
 
-> Nguồn: docx "CHƯƠNG 1: CƠ SỞ LÝ THUYẾT VÀ CÔNG NGHỆ".
+> Nguồn: docx "CHƯƠNG 1: CƠ SỞ LÝ THUYẾT VÀ CÔNG NGHỆ", bê **đầy đủ** và sắp xếp lại theo outline 2.1–2.6.
 
 ## 2.1. Cơ sở lý thuyết về Nhận dạng tiếng nói (STT)
 
 ### 2.1.1. Bài toán nhận dạng tiếng nói streaming trên luồng âm thanh liên tục
 
-Nhận dạng tiếng nói (STT) là quá trình chuyển tín hiệu âm thanh thành văn bản — thành phần quan trọng nhất của hệ thống S2ST vì chất lượng văn bản đầu ra ảnh hưởng trực tiếp đến các giai đoạn dịch và tổng hợp phía sau. Trong hệ thống truyền thống, âm thanh được thu thành tệp hoàn chỉnh trước khi xử lý, cho độ chính xác cao nhờ khai thác toàn bộ ngữ cảnh; nhưng với ứng dụng thời gian thực, chờ người dùng nói xong sẽ làm tăng đáng kể độ trễ. Vì vậy hệ thống hiện đại dùng kỹ thuật Streaming STT: âm thanh được chia thành các đoạn ngắn và truyền liên tục đến máy chủ để xử lý ngay khi người dùng đang nói.
+Nhận dạng tiếng nói (Speech-to-Text - STT) là quá trình chuyển đổi tín hiệu âm thanh thành văn bản. Đây là một trong những thành phần quan trọng nhất của hệ thống dịch giọng nói sang giọng nói (Speech-to-Speech Translation - S2ST), bởi chất lượng của văn bản đầu ra sẽ ảnh hưởng trực tiếp đến độ chính xác của các giai đoạn dịch máy và tổng hợp tiếng nói phía sau.
 
-Khác với nhận dạng trên tệp hoàn chỉnh, streaming yêu cầu xử lý liên tục các đoạn ngắn khi chưa có đủ ngữ cảnh. Hệ thống thường cung cấp hai loại kết quả: kết quả tạm thời (Interim) cập nhật liên tục để phản hồi tức thời, và kết quả cuối cùng (Final) chính xác hơn khi xác định người dùng đã kết thúc phát ngôn. Thách thức lớn nhất là thiếu hụt ngữ cảnh khi suy luận, đặc biệt với từ đồng âm, câu phức tạp hoặc thuật ngữ chuyên ngành. ✅
+Trong các hệ thống nhận dạng tiếng nói truyền thống, dữ liệu âm thanh thường được thu thập dưới dạng một tệp hoàn chỉnh trước khi đưa vào mô hình xử lý. Cách tiếp cận này cho phép mô hình khai thác toàn bộ ngữ cảnh của câu nói để đạt độ chính xác cao. Tuy nhiên, đối với các ứng dụng giao tiếp thời gian thực như hội họp trực tuyến hoặc trợ lý hội thoại, việc chờ người dùng nói xong toàn bộ câu mới tiến hành nhận dạng sẽ làm gia tăng đáng kể độ trễ của hệ thống. Vì vậy, các hệ thống hiện đại thường sử dụng kỹ thuật Streaming STT, trong đó âm thanh được chia thành các đoạn ngắn và truyền liên tục đến máy chủ để xử lý ngay trong quá trình người dùng đang phát biểu.
+
+**Đặc điểm của nhận dạng tiếng nói dạng Streaming.** Khác với nhận dạng tiếng nói trên tệp âm thanh hoàn chỉnh, nhận dạng dạng streaming yêu cầu hệ thống xử lý liên tục các đoạn âm thanh được gửi từ máy khách trong thời gian thực. Mỗi đoạn âm thanh thường chỉ chứa một phần nhỏ của phát ngôn, do đó mô hình phải đưa ra kết quả nhận dạng khi chưa có đầy đủ ngữ cảnh của toàn bộ câu.
+
+Để đáp ứng yêu cầu phản hồi nhanh, nhiều hệ thống streaming cung cấp hai loại kết quả nhận dạng. Kết quả tạm thời (Interim Result) được cập nhật liên tục trong khi người dùng đang nói nhằm cung cấp phản hồi tức thời. Khi hệ thống xác định người dùng đã kết thúc phát ngôn, kết quả cuối cùng (Final Result) sẽ được sinh ra với độ chính xác cao hơn và thay thế các kết quả tạm thời trước đó.
+
+Một trong những thách thức lớn nhất của nhận dạng tiếng nói dạng streaming là sự thiếu hụt ngữ cảnh trong quá trình suy luận. Do mô hình chỉ nhận được một đoạn âm thanh ngắn tại mỗi thời điểm, kết quả nhận dạng tạm thời có thể chưa chính xác hoặc thay đổi khi có thêm dữ liệu đầu vào. Điều này đặc biệt dễ xảy ra đối với các từ đồng âm, các câu có cấu trúc phức tạp hoặc thuật ngữ chuyên ngành. ✅
 
 ### 2.1.2. Mô hình Whisper và Faster-Whisper
 
-Whisper (OpenAI) dùng kiến trúc Encoder–Decoder dựa trên Transformer, huấn luyện trên tập âm thanh đa ngôn ngữ quy mô lớn. Tín hiệu âm thanh được chuyển thành Mel Spectrogram, đưa vào Encoder để trích đặc trưng ngữ âm; Decoder dùng Self-Attention và Cross-Attention sinh kết quả nhận dạng. Nhờ học đầu-cuối, Whisper chuyển trực tiếp âm thanh sang văn bản mà không cần tách riêng mô hình âm học và ngôn ngữ.
+Trong những năm gần đây, các mô hình nhận dạng tiếng nói dựa trên kiến trúc Transformer đã đạt được nhiều thành công nhờ khả năng khai thác ngữ cảnh dài hạn và xử lý hiệu quả trên nhiều ngôn ngữ khác nhau. Một trong những mô hình tiêu biểu là Whisper do OpenAI phát triển. Mô hình được huấn luyện trên tập dữ liệu âm thanh đa ngôn ngữ có quy mô lớn, cho phép thực hiện các tác vụ như nhận dạng tiếng nói, nhận diện ngôn ngữ và dịch thuật trực tiếp từ tín hiệu âm thanh.
 
-[[HÌNH: whisper_architecture.png | Kiến trúc tổng quát của mô hình Whisper]] ✅
+Về mặt kiến trúc, Whisper sử dụng mô hình Encoder-Decoder dựa trên Transformer. Tín hiệu âm thanh đầu vào trước tiên được chuyển đổi thành đặc trưng Mel Spectrogram, sau đó được đưa vào bộ mã hóa (Encoder) để trích xuất các đặc trưng ngữ âm. Bộ giải mã (Decoder) sử dụng cơ chế Self-Attention và Cross-Attention để học mối quan hệ giữa các đặc trưng âm thanh và chuỗi văn bản, từ đó sinh ra kết quả nhận dạng tương ứng. Nhờ khả năng học đầu cuối (End-to-End), Whisper có thể chuyển đổi trực tiếp từ âm thanh sang văn bản mà không cần xây dựng riêng biệt mô hình âm học và mô hình ngôn ngữ như các hệ thống truyền thống.
+
+[[HÌNH: whisper_architecture.png | Kiến trúc tổng quát của mô hình Whisper]]
+
+Để tối ưu tốc độ suy luận phục vụ nhận dạng thời gian thực, đề tài sử dụng Faster-Whisper — bản hiện thực lại của Whisper trên thư viện CTranslate2, hỗ trợ lượng tử hóa và khai thác hiệu quả tài nguyên phần cứng — cho luồng nhận dạng tiếng Anh. ⚠️ *(xác minh tên/cấu hình model với code ở GĐ verify)*
 
 ### 2.1.3. Mô hình PhoWhisper cho tiếng Việt
 
-PhoWhisper là phiên bản tinh chỉnh từ Whisper trên dữ liệu tiếng Việt, cải thiện khả năng nhận dạng đặc điểm ngữ âm và từ vựng đặc thù, cho độ chính xác cao hơn với tên riêng, thuật ngữ chuyên ngành và phát ngôn tiếng Việt thực tế. Đây là lý do PhoWhisper được chọn làm mô hình STT cho luồng tiếng Việt của hệ thống. ✅
+Đối với tiếng Việt, đề tài sử dụng PhoWhisper – phiên bản được tinh chỉnh từ Whisper trên dữ liệu tiếng Việt nhằm cải thiện khả năng nhận dạng các đặc điểm ngữ âm và từ vựng đặc thù. So với mô hình gốc, PhoWhisper cho độ chính xác cao hơn khi xử lý tên riêng, thuật ngữ chuyên ngành và các phát ngôn tiếng Việt trong môi trường thực tế. Nhờ những ưu điểm đó, PhoWhisper được lựa chọn làm mô hình nhận dạng tiếng nói cho luồng tiếng Việt trong hệ thống của đồ án. ✅
 
 ## 2.2. Cơ sở lý thuyết về Dịch máy thần kinh (NMT)
 
 ### 2.2.1. Tổng quan kiến trúc NLLB-200
 
-Dịch máy thần kinh (NMT) chuyển văn bản từ ngôn ngữ nguồn sang đích. NLLB-200 (No Language Left Behind) là mô hình dịch đa ngôn ngữ hỗ trợ hơn 200 ngôn ngữ, gồm Anh và Việt. Khác với dịch văn bản truyền thống, đầu vào của dịch hội thoại thời gian thực sinh ra từ tầng STT nên thường tự phát, không hoàn chỉnh ngữ pháp, ngắn và thiếu ngữ cảnh.
+Dịch máy thần kinh (Neural Machine Translation – NMT) là thành phần chịu trách nhiệm chuyển đổi văn bản từ ngôn ngữ nguồn sang ngôn ngữ đích trong hệ thống dịch giọng nói thời gian thực. Những năm gần đây, các mô hình dịch máy dựa trên kiến trúc Transformer đã đạt được nhiều thành tựu nổi bật nhờ khả năng học ngữ cảnh và biểu diễn ngữ nghĩa hiệu quả. Trong số đó, NLLB-200 (No Language Left Behind) là một mô hình dịch đa ngôn ngữ được phát triển nhằm hỗ trợ dịch thuật giữa hàng trăm ngôn ngữ khác nhau, trong đó có tiếng Anh và tiếng Việt.
+
+Khác với bài toán dịch văn bản truyền thống, dữ liệu đầu vào của hệ thống dịch hội thoại thời gian thực được tạo ra từ tầng nhận dạng tiếng nói và thường mang tính tự phát, không hoàn chỉnh về mặt ngữ pháp. Người nói có thể ngắt quãng giữa chừng, sử dụng từ đệm hoặc thay đổi cấu trúc câu trong quá trình phát biểu. Điều này làm cho các đoạn văn bản đầu vào thường ngắn, thiếu ngữ cảnh và khó xác định đầy đủ ý nghĩa của câu nói.
 
 [[HÌNH: nllb200_architecture.png | Kiến trúc tổng quát mô hình NLLB-200]]
 
-Quá trình huấn luyện NLLB bắt đầu từ thu thập dữ liệu (NLLB Seed, Public Bitext, dữ liệu đơn ngữ), nhận diện ngôn ngữ và làm sạch, dùng LASER3 để biểu diễn câu thành vector ngữ nghĩa và khai thác cặp song ngữ tương đồng (Mined Bitext). Mô hình huấn luyện bằng Mixture of Experts (MoE), Curriculum Learning, Self-Supervised Training và Back-Translation; đánh giá qua FLORES-200, Toxicity-200 và đánh giá chủ quan. Nhờ đó NLLB-200 tạo bản dịch chất lượng cao, giữ ngữ nghĩa câu nguồn, hạn chế dịch từng từ rời rạc. ✅
+Mục tiêu của dự án NLLB là mở rộng khả năng dịch thuật chất lượng cao cho hàng trăm ngôn ngữ trên thế giới, bao gồm cả những ngôn ngữ có nguồn tài nguyên dữ liệu hạn chế. Quá trình huấn luyện bắt đầu từ việc thu thập dữ liệu từ nhiều nguồn khác nhau như NLLB Seed, Public Bitext và các tập dữ liệu đơn ngữ (Monolingual Data). Các nguồn dữ liệu này sau đó được đưa qua bước nhận diện ngôn ngữ và làm sạch nhằm loại bỏ các mẫu dữ liệu không chính xác hoặc không phù hợp. Tiếp theo, công cụ LASER3 được sử dụng để biểu diễn câu dưới dạng vector ngữ nghĩa và khai thác các cặp câu song ngữ có nội dung tương đồng, tạo thành tập dữ liệu song ngữ chất lượng cao (Mined Bitext) phục vụ cho quá trình huấn luyện.
+
+Trên cơ sở nguồn dữ liệu đã được xử lý, mô hình NLLB-200 được huấn luyện bằng nhiều kỹ thuật hiện đại như Mixture of Experts (MoE), Curriculum Learning, Self-Supervised Training và Back-Translation. Các kỹ thuật này giúp mô hình tận dụng hiệu quả cả dữ liệu song ngữ và dữ liệu đơn ngữ, đồng thời nâng cao khả năng dịch thuật đối với các ngôn ngữ có ít tài nguyên huấn luyện. Sau khi hoàn thành quá trình huấn luyện, mô hình được đánh giá thông qua bộ dữ liệu FLORES-200, bộ tiêu chí Toxicity-200 và các đánh giá chủ quan từ con người nhằm kiểm tra độ chính xác, tính tự nhiên cũng như mức độ an toàn của bản dịch.
+
+Nhờ được huấn luyện trên tập dữ liệu đa ngôn ngữ quy mô lớn và hỗ trợ hơn 200 ngôn ngữ khác nhau, NLLB-200 có khả năng tạo ra các bản dịch có chất lượng cao, giữ được ngữ nghĩa của câu nguồn và hạn chế hiện tượng dịch từng từ rời rạc. Đây là một trong những lý do mô hình được lựa chọn làm thành phần dịch máy trong hệ thống dịch giọng nói thời gian thực của đề tài. ✅
 
 ### 2.2.2. Lượng tử hóa và tối ưu suy luận với CTranslate2
 
-CTranslate2 là thư viện tối ưu suy luận cho mô hình Transformer, hỗ trợ lượng tử hóa và khai thác hiệu quả phần cứng, tăng tốc cả Faster-Whisper và NLLB-200. ✅
+CTranslate2 là thư viện tối ưu hóa suy luận dành cho các mô hình Transformer. Thư viện hỗ trợ lượng tử hóa mô hình và khai thác hiệu quả tài nguyên phần cứng, giúp tăng tốc độ xử lý của cả Faster-Whisper và NLLB-200. Nhờ đó, hệ thống có thể đáp ứng yêu cầu suy luận thời gian thực ngay cả trong điều kiện tài nguyên GPU hạn chế. ✅
 
 ## 2.3. Cơ sở lý thuyết về Tổng hợp tiếng nói (TTS) dựa trên kiến trúc VITS
 
-Trong S2ST, tầng cuối chuyển văn bản đã dịch thành tín hiệu âm thanh, gồm tổng hợp tiếng nói (TTS) và quản lý luồng âm thanh đầu ra. TTS thời gian thực không chỉ cần âm thanh rõ ràng mà còn phải suy luận nhanh để hạn chế độ trễ toàn hệ thống. Các kiến trúc tối ưu như VITS và Piper TTS được thiết kế học sâu đầu-cuối, tạo giọng tự nhiên với tốc độ nhanh và dung lượng nhỏ, phù hợp thiết bị phổ thông.
+Trong hệ thống Speech-to-Speech Translation (S2ST), tầng cuối cùng chịu trách nhiệm chuyển đổi văn bản đã dịch thành tín hiệu âm thanh để truyền tải tới người nghe. Tầng này bao gồm hai thành phần quan trọng là tổng hợp tiếng nói (Text-to-Speech – TTS) và quản lý luồng âm thanh đầu ra. Chất lượng của giai đoạn này ảnh hưởng trực tiếp đến trải nghiệm giao tiếp thông qua độ tự nhiên của giọng nói, tốc độ phản hồi và khả năng vận hành ổn định trong môi trường hội nghị trực tuyến.
+
+Tổng hợp tiếng nói thời gian thực (Text-to-Speech – TTS) là quá trình chuyển đổi văn bản thành giọng nói nhân tạo. Trong các hệ thống dịch hội thoại, mô hình TTS không chỉ cần tạo ra âm thanh rõ ràng, dễ nghe mà còn phải đảm bảo tốc độ suy luận nhanh để hạn chế độ trễ của toàn bộ hệ thống. Hiện nay, nhiều mô hình TTS hiện đại có thể tạo ra giọng nói với chất lượng rất cao, tuy nhiên thường yêu cầu tài nguyên tính toán lớn và phụ thuộc vào GPU chuyên dụng. Trong khi đó, các kiến trúc tối ưu như VITS và Piper TTS được thiết kế theo hướng học sâu đầu cuối (End-to-End), cho phép tạo ra giọng nói tự nhiên với tốc độ suy luận nhanh và dung lượng mô hình nhỏ, phù hợp cho các ứng dụng thời gian thực trên thiết bị phổ thông.
 
 [[HÌNH: vits_architecture.png | Kiến trúc tổng quát mô hình VITS trong huấn luyện và suy luận]]
 
 ### 2.3.1. Phân tích kiến trúc VITS
 
-VITS cho phép chuyển trực tiếp văn bản thành tín hiệu âm thanh, không tách riêng dự đoán phổ và vocoder như TTS truyền thống. Ở huấn luyện, chuỗi văn bản → âm vị (Phonemes) → Text Encoder để trích đặc trưng ngôn ngữ; đồng thời phổ tuyến tính (Linear Spectrogram) của câu thực đưa vào Posterior Encoder để học biểu diễn tiềm ẩn. Monotonic Alignment Search (MAS) căn chỉnh tự động giữa âm vị và tín hiệu; Stochastic Duration Predictor dự đoán thời lượng phát âm tạo ngữ điệu tự nhiên. Ở suy luận, mô hình nhận đầu vào là chuỗi âm vị, qua Flow Decoder và Decoder sinh trực tiếp dạng sóng (Raw Waveform). ✅
+Mô hình tổng hợp tiếng nói đầu-cuối VITS được sử dụng làm nền tảng cho Piper TTS. VITS cho phép chuyển đổi trực tiếp văn bản đầu vào thành tín hiệu âm thanh mà không cần tách riêng các bước dự đoán phổ âm và vocoder như các hệ thống TTS truyền thống.
+
+Ở giai đoạn huấn luyện (Training Procedure), chuỗi văn bản sau khi được chuyển thành các đơn vị âm vị (Phonemes) sẽ được đưa vào Text Encoder để trích xuất đặc trưng ngôn ngữ. Đồng thời, phổ âm (Linear Spectrogram) của câu nói thực tế được đưa vào Posterior Encoder nhằm học biểu diễn tiềm ẩn của tín hiệu âm thanh. Thành phần Monotonic Alignment Search (MAS) có nhiệm vụ căn chỉnh tự động giữa chuỗi âm vị và tín hiệu âm thanh, giúp mô hình học được mối quan hệ giữa văn bản và giọng nói mà không cần dữ liệu căn chỉnh thủ công. Bên cạnh đó, Stochastic Duration Predictor được sử dụng để dự đoán thời lượng phát âm của từng âm vị, góp phần tạo nên ngữ điệu tự nhiên cho giọng nói tổng hợp.
+
+Trong giai đoạn suy luận (Inference Procedure), mô hình chỉ cần nhận đầu vào là chuỗi âm vị. Text Encoder và Stochastic Duration Predictor sẽ xác định đặc trưng ngôn ngữ và thời lượng phát âm tương ứng. Sau đó, thông qua Flow Decoder và Decoder, mô hình sinh trực tiếp dạng sóng âm thanh (Raw Waveform) ở đầu ra. Nhờ cơ chế học đầu-cuối cùng khả năng căn chỉnh tự động, VITS có thể tạo ra giọng nói có chất lượng tự nhiên cao, đồng thời đạt tốc độ suy luận nhanh hơn nhiều kiến trúc TTS truyền thống. Đây cũng là nền tảng được Piper TTS kế thừa và tối ưu hóa nhằm phục vụ các ứng dụng tổng hợp tiếng nói thời gian thực trên thiết bị có tài nguyên hạn chế. ✅
 
 ### 2.3.2. Posterior Encoder & Prior Encoder
 ### 2.3.3. Normalizing Flows
@@ -183,13 +205,31 @@ Silero VAD là mô hình phát hiện hoạt động giọng nói (Voice Activit
 
 ## 2.6. Các công nghệ và thư viện sử dụng
 
-> Quyết định: giữ làm mục con ngắn gọn ở Chương 2.
+> Theo quyết định merge: giữ làm mục con trong Chương 2. Các logo công nghệ (Python, FastAPI, WebSocket, PySide6, PyAudio…) trong docx cũ là ảnh trang trí — tùy chọn chèn lại, không bắt buộc.
 
-**Phía máy chủ (Server-side):** FastAPI (framework Web API bất đồng bộ chuẩn ASGI, làm máy chủ trung tâm nhận audio và trả kết quả STT/MT thời gian thực); WebSocket (giao thức song công truyền audio chunk và nhận kết quả tức thời trên một kết nối).
+### 2.6.1. Ngôn ngữ lập trình Python
 
-**Phía máy khách (Client-side):** PySide6 (GUI Qt cho Python, hiển thị văn bản/trạng thái/kết quả dịch); PyAudio (thu âm từ micro, phát âm thanh tổng hợp); SoundCard (truy cập thiết bị âm thanh Windows qua WASAPI, ghi Loopback Capture không cần quyền admin); VB-Audio Virtual Cable (trình điều khiển âm thanh ảo định tuyến âm thanh dịch tới phần mềm họp, hạn chế phản hồi âm học).
+Python là ngôn ngữ lập trình bậc cao, mục đích chung, thường được sử dụng để xây dựng phần mềm, tự động hóa tác vụ và phân tích dữ liệu; có thể dùng để tạo nhiều loại chương trình khác nhau mà không chuyên biệt cho một vấn đề cụ thể nào. Trong lĩnh vực khoa học dữ liệu và học máy, Python cho phép thực hiện các phép tính thống kê phức tạp, trực quan hóa dữ liệu, xây dựng thuật toán học máy và xử lý dữ liệu nhờ hệ sinh thái thư viện phong phú như TensorFlow, Keras… Vì những lý do đó, Python được chọn làm ngôn ngữ nền tảng cho cả phía máy chủ và máy khách của hệ thống. ✅
 
-**Thư viện mô hình AI:** CTranslate2 (tối ưu suy luận Transformer, tăng tốc Faster-Whisper & NLLB-200); Silero VAD (phát hiện hoạt động giọng nói). Ngôn ngữ nền tảng: Python. ✅
+### 2.6.2. Công nghệ phát triển phía máy chủ (Server-side)
+
+Phía máy chủ đảm nhận các tác vụ xử lý trí tuệ nhân tạo có yêu cầu tính toán cao như nhận dạng tiếng nói (STT), dịch máy thần kinh (NMT) và quản lý kết nối thời gian thực giữa các máy khách.
+
+- **FastAPI** là framework phát triển Web API hiện đại cho Python, được xây dựng dựa trên chuẩn ASGI. Framework này hỗ trợ lập trình bất đồng bộ (async/await), giúp xử lý hiệu quả nhiều kết nối đồng thời với độ trễ thấp. Trong đề tài, FastAPI được sử dụng để xây dựng máy chủ trung tâm tiếp nhận dữ liệu âm thanh từ các máy khách và trả về kết quả nhận dạng, dịch thuật theo thời gian thực.
+- **WebSocket** là giao thức truyền thông song công (Full-Duplex Communication) cho phép trao đổi dữ liệu hai chiều liên tục giữa máy khách và máy chủ trên cùng một kết nối. Công nghệ này được sử dụng để truyền các khối âm thanh (audio chunks) từ client đến server và nhận kết quả xử lý tức thời mà không cần liên tục tạo mới kết nối HTTP. ✅
+
+### 2.6.3. Công nghệ phát triển phía máy khách (Client-side)
+
+Phía máy khách chịu trách nhiệm thu nhận âm thanh, hiển thị giao diện người dùng, phát âm thanh dịch và quản lý định tuyến âm thanh trong hệ thống.
+
+- **PySide6** là bộ thư viện Python chính thức của Qt Framework. Thư viện được sử dụng để xây dựng giao diện đồ họa người dùng (GUI), cung cấp các thành phần hiển thị văn bản, trạng thái kết nối và kết quả dịch theo thời gian thực.
+- **PyAudio** là thư viện giao tiếp với hệ thống âm thanh của máy tính. Trong đề tài, PyAudio được sử dụng để thu âm từ microphone vật lý và phát âm thanh tổng hợp ra loa hoặc tai nghe.
+- **SoundCard** là thư viện hỗ trợ truy cập thiết bị âm thanh trên Windows thông qua WASAPI. Thư viện cho phép ghi âm dạng Loopback Capture để thu nhận âm thanh đang phát trên hệ thống mà không yêu cầu quyền quản trị viên.
+- **VB-Audio Virtual Cable** là trình điều khiển âm thanh ảo cho phép tạo các kênh truyền âm thanh nội bộ giữa các ứng dụng. Công nghệ này được sử dụng để định tuyến âm thanh dịch trực tiếp đến phần mềm họp trực tuyến và kiểm soát hiện tượng phản hồi âm học trong quá trình vận hành hệ thống. ✅
+
+### 2.6.4. Thư viện phát triển mô hình AI
+
+Ngoài các mô hình STT/NMT/TTS và VAD đã trình bày ở các mục 2.1–2.4, hệ thống sử dụng thư viện **CTranslate2** để tối ưu hóa suy luận cho Faster-Whisper và NLLB-200 (chi tiết ở mục 2.2.2), và mô hình **Silero VAD** để phát hiện hoạt động giọng nói (chi tiết ở mục 2.4). ✅
 
 ---
 
