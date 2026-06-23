@@ -22,9 +22,10 @@
 - [ ] `nllb200_architecture.png` — Kiến trúc NLLB-200
 - [ ] `vits_architecture.png` — Kiến trúc VITS
 
-Sơ đồ kiến trúc (render từ code PlantUML đã có trong docx cũ — Claude có thể hỗ trợ render):
-- [ ] `che_do_2_chieu_meeting.png` — Chế độ hội thoại 2 chiều (Online Meeting)
-- [ ] `che_do_1_chieu.png` — Chế độ dịch một chiều (video/bài giảng)
+Sơ đồ cần VẼ MỚI (code PlantUML cũ đã bỏ; xử lý sau):
+- [ ] `pipeline_finetune_overview.png` — Sơ đồ tổng quát quy trình finetune 2 giai đoạn → 3 model (mục 3.1)
+- [ ] `che_do_2_chieu_meeting.png` — Chế độ hội thoại 2 chiều, Online Meeting (mục 3.6.1)
+- [ ] `che_do_1_chieu.png` — Chế độ dịch một chiều, video/bài giảng (mục 3.6.1)
 
 Biểu đồ thực nghiệm (từ training / Google Drive — cần bạn cung cấp file gốc hoặc ảnh):
 - [ ] `vieneu_xephang_person_nam.png` — Xếp hạng thời lượng theo Person nam
@@ -32,9 +33,10 @@ Biểu đồ thực nghiệm (từ training / Google Drive — cần bạn cung 
 - [ ] `vieneu_phanbo_thoiluong_1999.png` — Phân bố thời lượng tập 1999 clips
 - [ ] `piper_mel_kl_loss.png` — Đường cong Mel Loss & KL Loss
 - [ ] `melspec_baseline_vs_male.png` — So sánh phổ Mel baseline vs giọng nam
-- [ ] `nisqa_mos_boxplot.png` — Box plot NISQA MOS 3 mô hình
-- [ ] `wer_boxplot.png` — Box plot WER 3 mô hình
-- [ ] `radar_3models.png` — Radar tổng hợp chỉ số 3 mô hình
+- [ ] `nisqa_mos_boxplot.png` — Box plot NISQA MOS các mô hình (mục 4.5.2)
+- [ ] `wer_boxplot.png` — Box plot WER các mô hình (mục 4.5.2)
+- [ ] `compare_normalized.png` — So sánh tốc độ hội tụ chuẩn hóa 3 run (mục 4.4.2)
+- [ ] `final_radar_phase9.png` — Radar tổng hợp 4 mô hình (mục 4.5.2)
 
 Ảnh giao diện hệ thống (chụp khi chạy client thực tế — phục vụ mục 4.6):
 - [ ] `client_giao_dien_chinh.png` — Giao diện chính (2 khung transcript Việt–Anh khi đang dịch)
