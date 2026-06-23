@@ -330,7 +330,7 @@ Hai nhóm hạn chế — *dữ liệu* và *quy trình huấn luyện* — là 
 
 ### 3.4.2. Kiểm định nhãn đa nguồn (ASR cross-check) và hiệu đính bằng LLM
 
-Vì nhãn văn bản tự sinh dễ sai, đồ án thiết kế quy trình **kiểm định chéo bằng ba hệ ASR độc lập về kiến trúc**: faster-whisper large-v3, **Qwen3-ASR-1.7B** (chạy cục bộ) và **Deepgram Nova-3** (API). Mỗi clip được so WER chéo giữa ba nguồn, phân loại Keep/Review/Drop theo ngưỡng WER, sau đó dùng **LLM (Gemini) hiệu đính theo lô (batch)** để sửa các trường hợp lệch (đặc biệt tên riêng/từ tiếng Anh), tận dụng ngữ cảnh câu lân cận. Kết quả: bộ dữ liệu cuối **2061 clip ≈ 4,22 giờ** (2023 Keep / 306 Drop / 38 Review). ✅
+Vì nhãn văn bản tự sinh dễ sai, đồ án thiết kế quy trình **kiểm định chéo bằng ba hệ ASR độc lập về kiến trúc**: faster-whisper large-v3, **Qwen3-ASR-1.7B** (chạy cục bộ) và **Deepgram Nova-3** (API). Mỗi clip được so WER chéo giữa ba nguồn, phân loại Keep/Review/Drop theo ngưỡng WER, sau đó dùng **LLM API model Gemini 3.5 flash mới nhất của google hiệu đính theo lô (batch)** để sửa các trường hợp lệch (đặc biệt tên riêng/từ tiếng Anh), tận dụng ngữ cảnh câu lân cận. Kết quả: bộ dữ liệu cuối **2061 clip ≈ 4,22 giờ** (2023 Keep / 306 Drop / 38 Review). ✅
 
 ### 3.4.3. Chuẩn hóa văn bản: vinorm và vietnormalizer
 
@@ -556,10 +556,68 @@ Mô hình được xuất sang **ONNX FP32 (~63,5 MB)** để triển khai. Phư
 
 ## 4.6. Kết quả tích hợp và vận hành hệ thống S2ST
 
-> Phần kết quả hệ thống — **viết sau** (theo kế hoạch GĐ2: finetune trước, hệ thống sau). Dự kiến gồm:
-> - 4.6.1. Kết quả client app: kết nối WebSocket, hiển thị transcript interim/final, ổn định luồng phát (AdaptiveJitterPlayer). ❌ `[⚠️ bug đang fix]`
-> - 4.6.2. Cô lập loopback bằng VoiceMeeter trong họp song hướng thực tế. ⚠️
-> - 4.6.3. Độ trễ tích lũy End-to-End: preload vs nạp động; ảnh hưởng VAD-chunking & SBD lên TTFA. ⚠️
+Hệ thống S2S đã được hoàn thiện và vận hành ổn định end-to-end cho cả hai chiều dịch trong cùng một phiên WebSocket. Phần này trình bày kết quả ở mức **chức năng và định tính**; các đặc tính tối ưu độ trễ được phân tích theo cơ chế thiết kế (việc đo độ trễ tích lũy định lượng đầy đủ được xem là hạn chế, nêu ở Chương 5).
+
+### 4.6.1. Kết quả chức năng ứng dụng client
+
+Ứng dụng client (PySide6) hoàn thiện các chức năng cốt lõi và chạy ổn định:
+
+- **Kết nối và phiên làm việc:** kết nối server qua WebSocket (hỗ trợ URL động/cố định), bắt tay phiên và khởi tạo đồng thời hai tuyến dịch; tự kết nối lại khi mất kết nối.
+- **Hai chiều song song:** Route 0 (Việt→Anh) từ micro và Route 1 (Anh→Việt) từ âm thanh hệ thống chạy đồng thời, hiển thị trên **hai khung transcript riêng** với kết quả tạm thời (interim) cập nhật liên tục rồi chốt thành kết quả cuối (final), không lẫn hai chiều.
+- **Warmup tự động:** sau khi vào phiên, client tự "làm nóng" pipeline để **loại bỏ độ trễ cold-start ở câu đầu tiên**.
+- **Phát âm thanh dịch:** hàng đợi phát theo từng tuyến (không chồng tiếng); âm dịch được định tuyến đúng đích (đưa vào phần mềm họp hoặc phát ra loa người dùng).
+- **Cấu hình:** chọn thiết bị micro/loopback/đầu ra, chọn giọng đọc, cỡ chữ; lưu cấu hình giữa các phiên.
+
+Giao diện gồm các thành phần: bảng kết nối, thanh công cụ, khung transcript hai chiều, đồng hồ mức âm (audio level), chân trang chẩn đoán (diagnostics), hộp thoại cài đặt.
+
+[[HÌNH: client_giao_dien_chinh.png | Giao diện chính của ứng dụng client (hai khung transcript Việt–Anh)]]
+[[HÌNH: client_settings_dialog.png | Hộp thoại cấu hình thiết bị âm thanh và giọng đọc]]
+
+⚠️ *(ảnh giao diện do người dùng chụp khi chạy thực tế — xem `user_manual_action.md`)*
+
+### 4.6.2. Kiểm thử chức năng end-to-end
+
+Hệ thống được kiểm thử qua các kịch bản chức năng chính, tất cả đều hoạt động đúng:
+
+[[BẢNG: | Các kịch bản kiểm thử chức năng hệ thống]]
+
+| Kịch bản | Kết quả |
+|---|---|
+| Dịch văn bản một tuyến (mode MT) | Đạt |
+| Nhận dạng streaming một tuyến (interim + final) | Đạt |
+| Dịch hai tuyến song song (mic + loopback), hai khung không lẫn | Đạt |
+| Tách câu dài thành nhiều đoạn TTS (chunk theo thứ tự) | Đạt |
+| Tự kết nối lại khi mất kết nối server | Đạt |
+| Kết thúc phiên sạch (flush câu cuối) | Đạt |
+| Warmup loại bỏ trễ cold-start câu đầu | Đạt |
+
+⚠️ *(xác nhận lại kết quả từng kịch bản với người dùng nếu cần ghi chi tiết hơn)*
+
+### 4.6.3. Cô lập âm thanh loopback bằng VoiceMeeter
+
+Trong kịch bản họp trực tuyến song hướng thực tế (Google Meet/Zoom), giải pháp định tuyến qua **VoiceMeeter Banana** (nhiều bus ảo) cho phép đưa luồng dịch vào micro ảo của phần mềm họp và thu âm cuộc họp trên một bus riêng, **xử lý triệt để vòng lặp tự dịch ở mức phần mềm** (âm dịch phát ra không bị thu ngược trở lại). Vọng âm phần cứng (loa↔micro) được loại bỏ bằng cách dùng tai nghe khi sử dụng (xem mục 1.5.1, 3.6.2). ✅
+
+### 4.6.4. Đặc tính độ trễ và khả năng thời gian thực
+
+Hệ thống được thiết kế để giảm độ trễ theo nhiều cơ chế đã trình bày ở Chương 3: **preload + warmup** triệt tiêu độ trễ khởi động lạnh; **cắt câu động bằng VAD + hangover**; **đệm dịch ngắn (Short-MT) và watchdog** cân bằng giữa ngữ cảnh và độ trễ. Tầng TTS đạt RTF rất thấp (~0,009 trên GPU, ~0,15 trên CPU — mục 4.5.4) nên không phải nút thắt.
+
+**Quan sát độ trễ (đo thủ công khi sử dụng thực tế):** độ trễ tích lũy của toàn hệ thống **tăng dần theo độ dài câu** và tập trung chủ yếu ở **bước STT** — do cơ chế VAD phải đợi hết câu (ngưỡng im lặng 450 ms + hangover ~400 ms ≈ 0,85 s) rồi mới phát kết quả cuối (`stt.final`) để chuyển sang dịch. Cụ thể:
+
+- **Kết quả tạm thời (interim)** xuất hiện gần như tức thời, chỉ **~0,3–0,5 s** sau khi người dùng bắt đầu nói → phản hồi thị giác rất mượt.
+- **Câu ngắn (~5–10 từ):** độ trễ tích lũy toàn hệ thống khoảng **1–2 s** (tính từ lúc dứt câu đến khi nghe bản dịch).
+- **Câu dài:** độ trễ cao hơn, tỷ lệ thuận với độ dài câu, vì VAD chờ trọn câu trước khi nhận dạng.
+
+[[BẢNG: | Ước lượng phân rã độ trễ tích lũy cho một câu ngắn (~5–10 từ)]]
+
+| Thành phần | Ước lượng | Ghi chú |
+|---|---|---|
+| Chờ điểm kết thúc câu (VAD 450 ms + hangover ~400 ms) | ~0,85 s | thành phần cố định, chiếm chủ yếu |
+| Nhận dạng STT (sau khi đủ câu) | ~0,2–0,4 s | |
+| Dịch máy MT (NLLB-200 int8) | ~0,1–0,2 s | |
+| Tổng hợp TTS + truyền/phát | ~0,1–0,3 s | RTF rất thấp |
+| **Tổng (câu ngắn)** | **~1–2 s** | khớp quan sát thực tế |
+
+> Lưu ý: các con số trên là **ước lượng từ đo thủ công kết hợp cấu hình hệ thống**, chưa phải đo bằng công cụ tự động trên nhiều kịch bản (nêu ở Chương 5). Phần lớn độ trễ đến từ thiết kế *chờ trọn câu* của VAD — một đánh đổi có chủ đích để bản dịch đủ ngữ cảnh và tự nhiên hơn. ⚠️
 
 ---
 

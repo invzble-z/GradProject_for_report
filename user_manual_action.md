@@ -36,6 +36,11 @@ Biểu đồ thực nghiệm (từ training / Google Drive — cần bạn cung 
 - [ ] `wer_boxplot.png` — Box plot WER 3 mô hình
 - [ ] `radar_3models.png` — Radar tổng hợp chỉ số 3 mô hình
 
+Ảnh giao diện hệ thống (chụp khi chạy client thực tế — phục vụ mục 4.6):
+- [ ] `client_giao_dien_chinh.png` — Giao diện chính (2 khung transcript Việt–Anh khi đang dịch)
+- [ ] `client_settings_dialog.png` — Hộp thoại cài đặt thiết bị âm thanh + giọng đọc
+- [ ] (tùy chọn) `demo_meeting.png` — Ảnh demo trong cuộc họp Meet/Zoom (overlay + định tuyến VoiceMeeter)
+
 ## C. CUNG CẤP DỮ LIỆU (khi Claude cần)
 
 - [ ] **CSV / metadata trên Google Drive** (vd `gpu_log.csv`, log train, bảng số liệu NISQA/WER/RTF…): tải về bỏ vào thư mục khi Claude yêu cầu, để lấp:
