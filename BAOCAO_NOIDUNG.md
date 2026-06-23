@@ -651,7 +651,63 @@ Hệ thống được thiết kế để giảm độ trễ theo nhiều cơ ch�
 
 # DANH MỤC TÀI LIỆU THAM KHẢO
 
-❌ *(XÓA placeholder rác nông nghiệp/kinh tế trong docx. Thu thập & trích dẫn chuẩn APA 7th: Whisper, PhoWhisper, NLLB-200, VITS, Piper/Rhasspy, Silero VAD, CTranslate2, NISQA, VieNeu-TTS...)*
+> Định dạng **APA 7th**, sắp xếp theo bảng chữ cái. Ngày truy cập các nguồn phần mềm/online tạm đặt **23/6/2026** — chỉnh theo ngày bạn chốt báo cáo. ⚠️ *(một vài tên tác giả/năm của phần mềm là best-effort, bạn rà lại: vinorm, VietNormalizer)*
+
+[1] Bechtold, B. (n.d.). *SoundCard: A Python library for playing and recording audio* [Computer software]. GitHub. Truy cập ngày 23/6/2026, từ https://github.com/bastibe/SoundCard
+
+[2] Dang, N. (n.d.). *Vinorm: Vietnamese text normalization* [Computer software]. GitHub. Truy cập ngày 23/6/2026, từ https://github.com/v-nhandt21/Vinorm
+
+[3] Deepgram. (2025). *Nova-3 speech-to-text* [API]. Truy cập ngày 23/6/2026, từ https://deepgram.com/learn/introducing-nova-3-speech-to-text-api
+
+[4] eSpeak NG contributors. (n.d.). *eSpeak NG text-to-speech* [Computer software]. GitHub. Truy cập ngày 23/6/2026, từ https://github.com/espeak-ng/espeak-ng
+
+[5] Hansen, M. (n.d.). *Piper: A fast, local neural text-to-speech system* [Computer software]. GitHub. Truy cập ngày 23/6/2026, từ https://github.com/rhasspy/piper
+
+[6] Kim, J., Kong, J., & Son, J. (2021). Conditional variational autoencoder with adversarial learning for end-to-end text-to-speech. *Proceedings of the 38th International Conference on Machine Learning (ICML)*, 5530–5540. https://arxiv.org/abs/2106.06103
+
+[7] Kong, J., Kim, J., & Bae, J. (2020). HiFi-GAN: Generative adversarial networks for efficient and high fidelity speech synthesis. *Advances in Neural Information Processing Systems, 33*. https://arxiv.org/abs/2010.05646
+
+[8] Le, T.-T., Nguyen, L. T., & Nguyen, D. Q. (2024). *PhoWhisper: Automatic speech recognition for Vietnamese*. ICLR 2024 (Tiny Papers). https://arxiv.org/abs/2406.02555
+
+[9] McFee, B., Raffel, C., Liang, D., Ellis, D. P. W., McVicar, M., Battenberg, E., & Nieto, O. (2015). librosa: Audio and music signal analysis in Python. *Proceedings of the 14th Python in Science Conference (SciPy 2015)*, 18–24.
+
+[10] Mittag, G., Naderi, B., Chehadi, A., & Möller, S. (2021). NISQA: A deep CNN-self-attention model for multidimensional speech quality prediction with crowdsourced datasets. *Interspeech 2021*, 2127–2131. https://arxiv.org/abs/2104.09494
+
+[11] Nghime Studio. (2026). *VietNormalizer: An open-source, dependency-free Python library for Vietnamese text normalization in TTS and NLP applications*. arXiv. https://arxiv.org/abs/2603.04145 (mã nguồn: https://github.com/nghimestudio/vietnormalizer)
+
+[12] NLLB Team, Costa-jussà, M. R., Cross, J., Çelebi, O., Elbayad, M., Heafield, K., … Wang, J. (2022). *No language left behind: Scaling human-centered machine translation*. arXiv. https://arxiv.org/abs/2207.04672
+
+[13] ONNX Runtime developers. (n.d.). *ONNX Runtime: Cross-platform, high-performance ML inferencing* [Computer software]. Truy cập ngày 23/6/2026, từ https://onnxruntime.ai
+
+[14] OpenNMT. (n.d.). *CTranslate2: Fast inference engine for Transformer models* [Computer software]. GitHub. Truy cập ngày 23/6/2026, từ https://github.com/OpenNMT/CTranslate2
+
+[15] Pham, H. (n.d.). *PyAudio: PortAudio bindings for Python* [Computer software]. Truy cập ngày 23/6/2026, từ https://people.csail.mit.edu/hubert/pyaudio/
+
+[16] pnnbao-ump. (n.d.). *VieNeu-TTS-140h* [Data set]. Hugging Face. Truy cập ngày 23/6/2026, từ https://huggingface.co/datasets/pnnbao-ump/VieNeu-TTS-140h
+
+[17] Qt Company. (n.d.). *PySide6 (Qt for Python)* [Computer software]. Truy cập ngày 23/6/2026, từ https://www.qt.io/qt-for-python
+
+[18] Qwen Team. (2026). *Qwen3-ASR* [Speech recognition model]. Alibaba Cloud / Hugging Face. Truy cập ngày 23/6/2026, từ https://huggingface.co/collections/Qwen/qwen3-asr
+
+[19] Radford, A., Kim, J. W., Xu, T., Brockman, G., McLeavey, C., & Sutskever, I. (2022). *Robust speech recognition via large-scale weak supervision*. arXiv. https://arxiv.org/abs/2212.04356
+
+[20] Ramírez, S. (n.d.). *FastAPI* [Computer software]. Truy cập ngày 23/6/2026, từ https://fastapi.tiangolo.com
+
+[21] Rouard, S., Massa, F., & Défossez, A. (2023). Hybrid transformers for music source separation. *ICASSP 2023*. https://arxiv.org/abs/2211.08553
+
+[22] Silero Team. (n.d.). *Silero VAD: Pre-trained enterprise-grade voice activity detector* [Computer software]. GitHub. Truy cập ngày 23/6/2026, từ https://github.com/snakers4/silero-vad
+
+[23] Steinmetz, C. J., & Reiss, J. D. (2021). pyloudnorm: A simple yet flexible loudness meter in Python. *150th AES Convention*. https://github.com/csteinmetz1/pyloudnorm
+
+[24] SYSTRAN. (n.d.). *faster-whisper* [Computer software]. GitHub. Truy cập ngày 23/6/2026, từ https://github.com/SYSTRAN/faster-whisper
+
+[25] Vaessen, N. (n.d.). *jiwer: Evaluate speech recognition with word error rate* [Computer software]. GitHub. Truy cập ngày 23/6/2026, từ https://github.com/jitsi/jiwer
+
+[26] Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., Kaiser, Ł., & Polosukhin, I. (2017). Attention is all you need. *Advances in Neural Information Processing Systems, 30*. https://arxiv.org/abs/1706.03762
+
+[27] VB-Audio Software. (n.d.). *VoiceMeeter Banana* [Computer software]. Truy cập ngày 23/6/2026, từ https://vb-audio.com/Voicemeeter/banana.htm
+
+[28] yt-dlp project. (n.d.). *yt-dlp: A feature-rich command-line audio/video downloader* [Computer software]. GitHub. Truy cập ngày 23/6/2026, từ https://github.com/yt-dlp/yt-dlp
 
 # PHỤ LỤC
 
