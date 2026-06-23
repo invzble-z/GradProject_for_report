@@ -298,7 +298,7 @@ Mục tiêu cốt lõi của phần nghiên cứu là xây dựng một mô hìn
 
 Để giải quyết, đồ án đề xuất hướng **chuyển đổi giới tính giọng nói bằng fine-tuning (cross-gender fine-tuning)** kết hợp **tự xây dựng dữ liệu giọng nam**. Quá trình được tổ chức thành **hai giai đoạn dữ liệu** dẫn tới **ba mô hình**: Giai đoạn 1 dùng dữ liệu công khai VieNeu (mục 3.3) → Model 1 (checkpoint e5219); Giai đoạn 2 tự thu thập dữ liệu từ YouTube (mục 3.4), được thúc đẩy bởi hạn chế của Giai đoạn 1, rồi huấn luyện hai mô hình theo hai chiến lược — Run A (full fine-tune) và Run B1 (partial-freeze + vietnormalizer) (mục 3.5). Ba mô hình được so sánh ở Chương 4 để chọn bản triển khai cuối (Run B1).
 
-[[HÌNH: pipeline_finetune_overview.png | Sơ đồ tổng quát quy trình xây dựng mô hình TTS giọng nam qua hai giai đoạn dữ liệu]] ⚠️ *(cần vẽ sơ đồ tổng quát)*
+Sơ đồ quy trình chi tiết của hai giai đoạn được trình bày tương ứng ở mục 3.3 (Giai đoạn 1) và mục 3.4 (Giai đoạn 2).
 
 ## 3.2. Chiến lược Cross-Gender Fine-tuning trên kiến trúc VITS
 
@@ -311,6 +311,8 @@ Thay vì huấn luyện từ đầu, đồ án áp dụng **Cross-Gender Fine-tu
 Về mặt âm học, fine-tuning dịch chuyển không gian biểu diễn từ miền giọng nữ sang miền giọng nam: tần số cơ bản (F0), cấu trúc formant, phổ cộng hưởng và âm sắc được cập nhật dựa trên dữ liệu mới. Kiến trúc VITS dùng huấn luyện đối kháng (Adversarial Training) kết hợp các hàm mất mát tái tạo phổ Mel (Mel-Spectrogram Reconstruction Loss), căn chỉnh đơn điệu (Monotonic Alignment Loss) và các hàm mất mát đặc trưng khác. Bộ phân biệt (Discriminator) liên tục đánh giá để bộ sinh (Generator) tạo tín hiệu ngày càng gần dữ liệu thực, nhờ đó mô hình học đặc trưng giọng nam mà vẫn bảo toàn khả năng phát âm tiếng Việt. ✅
 
 ## 3.3. Giai đoạn 1 — Xây dựng dữ liệu từ nguồn công khai VieNeu
+
+[[HÌNH: pipeline_giai_doan_1_vieneu.png | Sơ đồ quy trình Giai đoạn 1 — từ dữ liệu VieNeu đến Model 1]]
 
 ### 3.3.1. Khảo sát và lựa chọn nguồn dữ liệu
 
@@ -329,6 +331,8 @@ Model 1 đạt được giọng nam với độ tự nhiên tốt, nhưng bộc 
 Hai nhóm hạn chế — *dữ liệu* và *quy trình huấn luyện* — là động lực trực tiếp cho Giai đoạn 2: vừa **tự thu thập một bộ dữ liệu lớn và sạch hơn**, vừa **tối ưu lại quy trình huấn luyện** (đo ngưỡng độ dài động, chủ động kiểm soát Learning Rate, và thử chiến lược đóng băng một phần). ✅
 
 ## 3.4. Giai đoạn 2 — Tự thu thập và xử lý dữ liệu từ YouTube
+
+[[HÌNH: pipeline_giai_doan_2_selfcollect.png | Sơ đồ quy trình Giai đoạn 2 — tự thu thập dữ liệu đến Run A và Run B1]]
 
 ### 3.4.1. Thu thập và tiền xử lý dữ liệu
 

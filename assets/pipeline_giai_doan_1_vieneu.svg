@@ -1,0 +1,60 @@
+<svg viewBox="0 0 720 800" xmlns="http://www.w3.org/2000/svg" role="img" font-family="system-ui,-apple-system,'Segoe UI',Roboto,sans-serif">
+  <title>Giai đoạn 1 — Pipeline dữ liệu VieNeu đến Model 1</title>
+  <desc>Chọn VieNeu, ghép 3 speaker, chuẩn hóa, QC PhoWhisper-large, lọc Per-Speaker Hybrid 1500 clip, tiền xử lý Piper (1110 clip train, 390 clip validation), cross-gender fine-tune VITS LR khoảng 1,1e-4, ra Model 1 e5219.</desc>
+  <defs>
+    <marker id="ar1" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#6B7280"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="720" height="800" rx="14" fill="#FFFFFF" stroke="#E5E7EB"/>
+  <text x="24" y="36" fill="#111827" font-size="18" font-weight="700">Giai đoạn 1 — Dữ liệu công khai VieNeu → Model 1</text>
+
+  <g stroke="#6B7280" stroke-width="1.6" fill="none">
+    <path d="M240,118 L240,152" marker-end="url(#ar1)"/>
+    <path d="M240,208 L240,242" marker-end="url(#ar1)"/>
+    <path d="M240,298 L240,332" marker-end="url(#ar1)"/>
+    <path d="M240,388 L240,422" marker-end="url(#ar1)"/>
+    <path d="M240,478 L240,512" marker-end="url(#ar1)"/>
+    <path d="M240,568 L240,602" marker-end="url(#ar1)"/>
+    <path d="M240,674 L240,704" marker-end="url(#ar1)"/>
+    <path d="M390,540 L428,540" marker-end="url(#ar1)" stroke-dasharray="5 3"/>
+  </g>
+
+  <!-- n1 -->
+  <rect x="90" y="62" width="300" height="56" rx="10" fill="#F9FAFB" stroke="#9CA3AF" stroke-width="1.5"/>
+  <text x="106" y="86" fill="#111827" font-size="15" font-weight="600">1. Chọn nguồn dữ liệu</text>
+  <text x="106" y="105" fill="#4B5563" font-size="12">VieNeu-TTS-140h — bỏ FPT-FOSD</text>
+  <!-- n2 -->
+  <rect x="90" y="152" width="300" height="56" rx="10" fill="#F9FAFB" stroke="#9CA3AF" stroke-width="1.5"/>
+  <text x="106" y="176" fill="#111827" font-size="15" font-weight="600">2. Ghép 3 speaker nam</text>
+  <text x="106" y="195" fill="#4B5563" font-size="12">~1.999 clip · 3,65 giờ</text>
+  <!-- n3 -->
+  <rect x="90" y="242" width="300" height="56" rx="10" fill="#F9FAFB" stroke="#9CA3AF" stroke-width="1.5"/>
+  <text x="106" y="266" fill="#111827" font-size="15" font-weight="600">3. Chuẩn hóa âm thanh</text>
+  <text x="106" y="285" fill="#4B5563" font-size="12">22,05 kHz · −23 LUFS · cắt lặng</text>
+  <!-- n4 -->
+  <rect x="90" y="332" width="300" height="56" rx="10" fill="#F9FAFB" stroke="#9CA3AF" stroke-width="1.5"/>
+  <text x="106" y="356" fill="#111827" font-size="15" font-weight="600">4. QC nhận dạng ngược</text>
+  <text x="106" y="375" fill="#4B5563" font-size="12">PhoWhisper-large · WER/CER</text>
+  <!-- n5 -->
+  <rect x="90" y="422" width="300" height="56" rx="10" fill="#F9FAFB" stroke="#9CA3AF" stroke-width="1.5"/>
+  <text x="106" y="446" fill="#111827" font-size="15" font-weight="600">5. Lọc Per-Speaker Hybrid</text>
+  <text x="106" y="465" fill="#4B5563" font-size="12">1.500 clip sạch · 2,5 giờ</text>
+  <!-- n6 -->
+  <rect x="90" y="512" width="300" height="56" rx="10" fill="#F9FAFB" stroke="#9CA3AF" stroke-width="1.5"/>
+  <text x="106" y="536" fill="#111827" font-size="15" font-weight="600">6. Tiền xử lý Piper — vinorm</text>
+  <text x="106" y="555" fill="#4B5563" font-size="12">max-phoneme-ids 400 → 1.110 clip train</text>
+  <!-- branch -->
+  <rect x="428" y="512" width="272" height="56" rx="10" fill="#FFFFFF" stroke="#9CA3AF" stroke-width="1.2" stroke-dasharray="5 3"/>
+  <text x="442" y="535" fill="#6B7280" font-size="11.5">390 clip dài bị loại → tập</text>
+  <text x="442" y="552" fill="#6B7280" font-size="11.5">validation (held-out, eval 4 model)</text>
+  <!-- n7 -->
+  <rect x="90" y="602" width="300" height="72" rx="10" fill="#F9FAFB" stroke="#9CA3AF" stroke-width="1.5"/>
+  <text x="106" y="626" fill="#111827" font-size="15" font-weight="600">7. Cross-gender fine-tune VITS</text>
+  <text x="106" y="645" fill="#4B5563" font-size="12">nền vais1000-medium (giọng nữ)</text>
+  <text x="106" y="663" fill="#4B5563" font-size="12">LR ≈ 1,1e-4 (kế thừa từ checkpoint nền) · batch 16</text>
+  <!-- result -->
+  <rect x="90" y="704" width="300" height="58" rx="10" fill="#EFF6FF" stroke="#2563EB" stroke-width="2.5"/>
+  <text x="106" y="729" fill="#1D4ED8" font-size="15" font-weight="700">➤ Model 1 — checkpoint e5219</text>
+  <text x="106" y="748" fill="#4B5563" font-size="12">giọng nam · ONNX FP32 ~63,5 MB</text>
+</svg>

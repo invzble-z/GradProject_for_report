@@ -15,33 +15,34 @@
 
 ## B. CUNG CẤP / CHÈN ẢNH
 
-> 13 ảnh đang là placeholder `[[HÌNH: ...]]`. Lưu ý: `DATN_BT.docx` cũ đã nhúng ~35 ảnh — nhiều ảnh lý thuyết/sơ đồ có thể tái dùng. **Claude có thể trích ảnh sẵn từ docx cũ ra file nếu bạn yêu cầu.**
+> Ảnh đã được trích/gom vào thư mục **`assets/`**. `[x]` = đã có trong `assets/` · `[ ]` = còn thiếu.
+> ⚠️ **Cần xóa tay** các file rác `assets/misc_*.png` + `assets/misc_05.jpeg` và thư mục `assets/_unused/` (sót từ lần trích đầu / ảnh usecase-logo cũ không dùng — sandbox không xóa được).
 
-Ảnh lý thuyết (có thể đã có trong docx cũ → trích lại):
-- [ ] `whisper_architecture.png` — Kiến trúc tổng quát Whisper
-- [ ] `nllb200_architecture.png` — Kiến trúc NLLB-200
-- [ ] `vits_architecture.png` — Kiến trúc VITS
+**ĐÃ CÓ — trích từ `DATN_BT.docx`:**
+- [x] `whisper_architecture.png` — Kiến trúc Whisper (2.1.2)
+- [x] `nllb200_architecture.png` — Kiến trúc NLLB-200 (2.2.1)
+- [x] `vits_architecture.png` — Kiến trúc VITS (2.3)
+- [x] `vieneu_xephang_person_nam.png` (4.2.1)
+- [x] `vieneu_xephang_speaker_nam.png` (4.2.1)
+- [x] `vieneu_phanbo_thoiluong_1999.png` (4.2.1)
+- [x] `piper_mel_kl_loss.png` — đường cong loss Model 1 (4.4.1)
+- [x] `melspec_baseline_vs_male.png` (4.5.4)
+- [x] `che_do_2_chieu_meeting.png` (3.6.1)
+- [x] `che_do_1_chieu.png` (3.6.1)
 
-Sơ đồ cần VẼ MỚI (code PlantUML cũ đã bỏ; xử lý sau):
-- [ ] `pipeline_finetune_overview.png` — Sơ đồ tổng quát quy trình finetune 2 giai đoạn → 3 model (mục 3.1)
-- [ ] `che_do_2_chieu_meeting.png` — Chế độ hội thoại 2 chiều, Online Meeting (mục 3.6.1)
-- [ ] `che_do_1_chieu.png` — Chế độ dịch một chiều, video/bài giảng (mục 3.6.1)
+**ĐÃ CÓ — gom từ `reports/` (bản phase9 4-model, đúng cho Chương 4):**
+- [x] `nisqa_mos_boxplot.png` (4.5.2)
+- [x] `wer_boxplot.png` (4.5.2)
+- [x] `final_radar_phase9.png` (4.5.2)
+- [x] `compare_normalized.png` (4.4.2)
+- *(trong assets/ còn `*__OLD3model.png` = bản cũ 3-model trích từ docx — KHÔNG dùng, có thể xóa)*
 
-Biểu đồ thực nghiệm (từ training / Google Drive — cần bạn cung cấp file gốc hoặc ảnh):
-- [ ] `vieneu_xephang_person_nam.png` — Xếp hạng thời lượng theo Person nam
-- [ ] `vieneu_xephang_speaker_nam.png` — Xếp hạng Speaker nam đơn lẻ
-- [ ] `vieneu_phanbo_thoiluong_1999.png` — Phân bố thời lượng tập 1999 clips
-- [ ] `piper_mel_kl_loss.png` — Đường cong Mel Loss & KL Loss
-- [ ] `melspec_baseline_vs_male.png` — So sánh phổ Mel baseline vs giọng nam
-- [ ] `nisqa_mos_boxplot.png` — Box plot NISQA MOS các mô hình (mục 4.5.2)
-- [ ] `wer_boxplot.png` — Box plot WER các mô hình (mục 4.5.2)
-- [ ] `compare_normalized.png` — So sánh tốc độ hội tụ chuẩn hóa 3 run (mục 4.4.2)
-- [ ] `final_radar_phase9.png` — Radar tổng hợp 4 mô hình (mục 4.5.2)
-
-Ảnh giao diện hệ thống (chụp khi chạy client thực tế — phục vụ mục 4.6):
-- [ ] `client_giao_dien_chinh.png` — Giao diện chính (2 khung transcript Việt–Anh khi đang dịch)
-- [ ] `client_settings_dialog.png` — Hộp thoại cài đặt thiết bị âm thanh + giọng đọc
-- [ ] (tùy chọn) `demo_meeting.png` — Ảnh demo trong cuộc họp Meet/Zoom (overlay + định tuyến VoiceMeeter)
+**CÒN THIẾU — cần tạo/cung cấp:**
+- [x] `pipeline_giai_doan_1_vieneu.png` — sơ đồ quy trình Giai đoạn 1 (3.3) — *có PNG + nguồn `.svg` trong assets/*
+- [x] `pipeline_giai_doan_2_selfcollect.png` — sơ đồ quy trình Giai đoạn 2 (3.4) — *có PNG + nguồn `.svg` trong assets/*
+- [ ] `client_giao_dien_chinh.png` — giao diện chính client khi đang dịch (4.6.1) — **bạn chụp**
+- [ ] `client_settings_dialog.png` — hộp thoại cài đặt (4.6.1) — **bạn chụp**
+- [ ] (tùy chọn) `demo_meeting.png` — ảnh demo họp Meet/Zoom (4.6.3) — **bạn chụp**
 
 ## C. CUNG CẤP DỮ LIỆU (khi Claude cần)
 
