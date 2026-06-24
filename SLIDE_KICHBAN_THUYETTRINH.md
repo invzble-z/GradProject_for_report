@@ -48,19 +48,21 @@
 
 ---
 
-## 💻 SLIDE 4: TỔNG QUAN GIẢI PHÁP & CƠ SỞ LÝ THUYẾT
-*   **Thời lượng dự kiến:** 40 giây (Nói lướt nhanh)
+## 💻 SLIDE 4: CẤU TRÚC 3 LỚP CÔNG NGHỆ & TỔNG QUAN GIẢI PHÁP
+*   **Thời lượng dự kiến:** 45 giây (Nói mạch lạc, thể hiện tính hệ thống)
 *   **Bố cục & Ghi chú thiết kế:**
-    *   Sơ đồ hóa quy trình 3 tầng: STT -> MT -> TTS.
-    *   Ghi rõ tên mô hình được lựa chọn dưới mỗi khối để hội đồng thấy rõ cơ sở công nghệ.
+    *   Sơ đồ hóa kiến trúc 3 lớp công nghệ rõ ràng (tương tự thiết kế slide 3 lớp chuyên nghiệp):
+        1. Lớp Client & Giao diện (PySide6, PyAudio, SoundCard, VoiceMeeter Banana)
+        2. Lớp Dịch vụ & WebSocket (FastAPI, Connection Session State)
+        3. Lớp AI Engine (Faster-Whisper/PhoWhisper $\rightarrow$ NLLB-200 CTranslate2 $\rightarrow$ Piper TTS, Silero VAD)
 *   **Hình ảnh/Bảng biểu (Placeholder):**
     *   `[[HÌNH: D:\VKU\GraProject\For_report\assets\whisper_architecture.png | Kiến trúc Whisper]]`
     *   `[[HÌNH: D:\VKU\GraProject\For_report\assets\vits_architecture.png | Kiến trúc VITS]]`
 *   **Kịch bản nói (Speech Script):**
-    *   "Về mặt cơ sở lý thuyết, hệ thống được thiết kế theo kiến trúc phân tầng (cascaded) để tận dụng các mô hình học sâu mạnh nhất hiện nay cho từng chặng. 
-    *   Luồng nhận dạng tiếng nói (STT) sử dụng **Faster-Whisper** cho tiếng Anh và **PhoWhisper-medium** được tối ưu hóa qua CTranslate2 cho tiếng Việt. 
-    *   Tầng dịch máy (NMT) sử dụng mô hình đa ngôn ngữ **NLLB-200 distilled-600M** lượng tử hóa INT8 giúp bảo toàn ngữ nghĩa hội thoại. 
-    *   Tầng tổng hợp tiếng nói (TTS) dựa trên kiến trúc **VITS** - một mạng tự mã hóa biến phân đối kháng (CVAE) sinh trực tiếp sóng âm từ văn bản, được triển khai qua bộ công cụ **Piper TTS** để suy luận tốc độ cao. Luồng dữ liệu được phân đoạn động bởi **Silero VAD** siêu nhẹ chạy trên CPU."
+    *   "Về mặt giải pháp, hệ thống dịch giọng nói thời gian thực của đồ án được thiết kế theo cấu trúc 3 lớp công nghệ chặt chẽ để đảm bảo tính phân tán và tối ưu hiệu năng. 
+    *   **Lớp thứ nhất là Lớp Client và Giao diện:** đảm nhiệm việc thu/phát âm thanh qua PyAudio, ghi âm hệ thống qua WASAPI Loopback (SoundCard), điều phối giao diện bằng PySide6 và xử lý cô lập âm thanh vật lý thông qua VoiceMeeter Banana.
+    *   **Lớp thứ hai là Lớp Dịch vụ trung gian:** sử dụng framework FastAPI chạy bất đồng bộ để quản lý trạng thái kết nối WebSocket song công thời gian thực.
+    *   **Lớp thứ ba là Lớp xử lý AI cốt lõi:** tích hợp Faster-Whisper và PhoWhisper cho chặng STT; NLLB-200 distilled-600M lượng tử hóa INT8 qua CTranslate2 cho chặng dịch máy NMT; và mô hình VITS/Piper TTS (ONNX) cho chặng tổng hợp tiếng nói, đi kèm bộ cắt câu động Silero VAD."
 
 ---
 
@@ -177,30 +179,33 @@
 
 ---
 
-## 💻 SLIDE 13: KIẾN TRÚC TỔNG QUÁT HỆ THỐNG S2ST & WEBSOCKET
-*   **Thời lượng dự kiến:** 45 giây (Bắt đầu phần Hệ thống - Chiếm 35% thời lượng chặng kỹ thuật)
+## 💻 SLIDE 13: KIẾN TRÚC HỆ THỐNG S2ST & LUỒNG TƯƠNG TÁC NGƯỜI DÙNG
+*   **Thời lượng dự kiến:** 50 giây (Bắt đầu phần Hệ thống - Chiếm 35% thời lượng chặng kỹ thuật)
 *   **Bố cục & Ghi chú thiết kế:**
-    *   Sơ đồ kiến trúc Client-Server tương tác qua WebSocket song công.
-    *   Dùng các mũi tên động thể hiện luồng truyền nhận đồng thời: âm thanh nhị phân đi lên, transcript JSON và âm thanh dịch đi về.
+    *   Sơ đồ tương tác song công qua WebSocket giữa hai phía người dùng trong phòng họp trực tuyến:
+        *   Tuyến 0 (Người nói tiếng Việt $\rightarrow$ Micro $\rightarrow$ STT PhoWhisper $\rightarrow$ NLLB VI-EN $\rightarrow$ TTS English $\rightarrow$ Zoom/Meet của đối tác).
+        *   Tuyến 1 (Đối tác nói tiếng Anh $\rightarrow$ WASAPI Loopback $\rightarrow$ STT Faster-Whisper $\rightarrow$ NLLB EN-VI $\rightarrow$ TTS giọng nam Run B1 $\rightarrow$ Tai nghe của người dùng Việt).
 *   **Hình ảnh/Bảng biểu (Placeholder):**
     *   `[[HÌNH: D:\VKU\GraProject\For_report\assets\che_do_2_chieu_meeting.png | Chế độ hội thoại 2 chiều song hướng]]`
     *   `[[HÌNH: D:\VKU\GraProject\For_report\assets\che_do_1_chieu.png | Chế độ dịch một chiều]]`
 *   **Kịch bản nói (Speech Script):**
-    *   "Tiếp theo, em xin phép trình bày về **Thiết kế và Tích hợp hệ thống dịch giọng nói thời gian thực S2ST**. Hệ thống được xây dựng theo kiến trúc Client-Server, kết nối qua giao thức **WebSocket song công** cho phép truyền nhận dữ liệu hai chiều đồng thời trên một kênh duy nhất.
-    *   Mỗi gói tin âm thanh gửi lên server mang theo một byte định danh tuyến `route_id`. Máy chủ FastAPI đóng vai trò bộ định tuyến (dispatcher) bất đồng bộ, phân phối chính xác gói tin tới đúng luồng xử lý và trả kết quả về client. Hệ thống hỗ trợ hai chế độ vận hành: **Chế độ 1 chiều** dịch video/bài giảng và **Chế độ 2 chiều song hướng** phục vụ hội họp trực tuyến. Cơ chế Preload và Warmup được thiết lập tại server để làm nóng sẵn các mô hình lúc khởi động, loại bỏ hoàn toàn độ trễ khởi động lạnh (cold-start) ở câu thoại đầu tiên."
+    *   "Tiếp theo, em xin trình bày về **Thiết kế và Tích hợp hệ thống dịch giọng nói thời gian thực S2ST**. Hệ thống được xây dựng theo kiến trúc Client-Server tương tác qua kết nối **WebSocket song công**, quản lý chặt chẽ theo máy trạng thái phiên.
+    *   Để giúp Hội đồng dễ hình dung luồng tương tác thực tế trong một buổi họp Google Meet song hướng: 
+    *   **Tuyến thứ nhất (Route 0):** Khi người dùng Việt Nam nói vào micro, âm thanh được gửi lên server qua WebSocket để chạy STT PhoWhisper, dịch sang tiếng Anh qua NLLB, tổng hợp giọng tiếng Anh bằng Piper TTS rồi đẩy qua cáp ảo VoiceMeeter vào cổng micro ảo của phòng họp Zoom/Meet để đối tác nước ngoài nghe thấy.
+    *   **Tuyến thứ hai (Route 1) hoạt động song song:** Khi đối tác nước ngoài phát biểu bằng tiếng Anh, ứng dụng máy khách thu âm thanh hệ thống qua WASAPI Loopback, gửi lên server chạy STT tiếng Anh, dịch sang tiếng Việt, tổng hợp thành giọng nam trầm ấm **Run B1** rồi phát trực tiếp ra tai nghe của người dùng Việt. Quá trình này diễn ra bất đồng bộ, độc lập, không hề gây xung đột hay trộn lẫn luồng âm thanh."
 
 ---
 
-## 💻 SLIDE 14: THIẾT KẾ TỐI ƯU ĐỘ TRỄ: VAD, SHORT-MT & WATCHDOG
-*   **Thời lượng dự kiến:** 45 giây
+## 💻 SLIDE 14: THIẾT KẾ TỐI ƯU ĐỘ TRỄ & CƠ CHẾ DỰ PHÒNG LỖI (FALLBACK)
+*   **Thời lượng dự kiến:** 50 giây
 *   **Bố cục & Ghi chú thiết kế:**
-    *   Sơ đồ luồng xử lý streaming: Khối PCM 200ms -> Silero VAD -> Ngưỡng im lặng 450ms + Hangover 400ms -> STT -> Short-MT -> Watchdog (3s) -> NMT -> TTS.
-    *   Nhấn mạnh các tham số thời gian được tối ưu bằng chữ nổi bật.
+    *   Sơ đồ luồng xử lý streaming tích hợp các tham số thời gian tối ưu (VAD 450ms, Hangover 400ms, Watchdog 3s) và mô tả 2 cơ chế dự phòng (Network Reconnect & Watchdog Force Flush).
 *   **Kịch bản nói (Speech Script):**
-    *   "Để tối ưu hóa độ trễ tích lũy qua 3 tầng AI mà vẫn đảm bảo độ chính xác dịch thuật, đồ án đã thiết kế các cơ chế điều phối luồng dữ liệu thông minh:
-    *   **Cắt câu động bằng Silero VAD:** Luồng âm thanh được gửi liên tục mỗi 200 ms. VAD sẽ cắt câu động khi phát hiện khoảng im lặng liên tục đạt **450 ms**, kết hợp đệm thêm một khoảng **Hangover Frame ~400 ms** để tránh mất các phụ âm cuối năng lượng thấp.
-    *   **Đệm dịch ngắn (Short-MT):** Gom các cụm từ ngắn từ STT lại để NLLB-200 dịch đủ ngữ cảnh và tự nhiên.
-    *   **Giám sát Watchdog (Force Flush):** Nếu người nói ngắt quãng quá lâu, bộ watchdog sẽ cưỡng bức đẩy bản dịch đi sau **3 giây** im lặng dù chưa đạt độ dài tối thiểu, giúp cân bằng hoàn hảo giữa chất lượng dịch thuật và độ trễ."
+    *   "Để tối ưu hóa độ trễ tích lũy qua 3 tầng AI mà vẫn đảm bảo tính chính xác và độ bền vững của hệ thống, đồ án thiết kế các cơ chế điều phối luồng dữ liệu thông minh kết hợp **giải pháp dự phòng lỗi (Graceful Fallback)**:
+    *   **Về tối ưu luồng dữ liệu:** Hệ thống cắt câu động bằng Silero VAD khi phát hiện khoảng lặng đạt **450 ms**, đệm thêm **Hangover Frame ~400 ms** để bảo toàn phụ âm cuối. Cơ chế đệm dịch ngắn (Short-MT) gom cụm từ tăng độ chính xác dịch thuật.
+    *   **Cơ chế dự phòng lỗi mạng và nhiễu:** Để đảm bảo hệ thống vận hành bền vững trong thực tế, chúng em xây dựng hai giải pháp dự phòng quan trọng. 
+    *   *Thứ nhất là Watchdog Force Flush:* Khi gặp tiếng ồn môi trường lớn hoặc người nói lấy hơi quá lâu khiến VAD không thể ngắt câu, bộ watchdog giám sát sẽ cưỡng bức đẩy gói dịch đi sau **3 giây** để giải phóng hàng đợi, tránh kẹt luồng dịch.
+    *   *Thứ hai là Tự động khôi phục kết nối:* Client PySide6 tích hợp cơ chế tự động phát hiện mất mạng, tự động bắt tay kết nối lại (reconnect) và đồng bộ trạng thái phiên WebSocket dưới nền mà không làm crash ứng dụng, mang lại độ tin cậy cao khi vận hành thực tế."
 
 ---
 
