@@ -12,11 +12,11 @@
 *   **Bố cục & Ghi chú thiết kế:**
     *   Thiết kế tối giản, hiện đại với tông màu xanh navy chủ đạo (`#1a365d`).
     *   Tiêu đề đề tài viết chữ in hoa, nổi bật ở trung tâm.
-    *   Phía dưới ghi rõ: Sinh viên thực hiện, Mã số sinh viên, và Giáo viên hướng dẫn: ThS. Trần Uyên Trang.
+    *   Phía dưới ghi rõ: Sinh viên thực hiện, Mã số sinh viên, và Giáo viên hướng dẫn: TS. Trần Uyên Trang.
 *   **Hình ảnh/Bảng biểu (Placeholder):**
     *   Logo trường Đại học Công nghệ Thông tin và Truyền thông Việt - Hàn (VKU) ở góc trên bên trái.
 *   **Kịch bản nói (Speech Script):**
-    *   "Kính thưa các thầy cô trong Hội đồng đánh giá Đồ án tốt nghiệp. Em tên là **[Họ tên của bạn]**, mã số sinh viên là **[MSSV của bạn]**. Hôm nay, em xin phép được trình bày báo cáo đồ án tốt nghiệp của mình với đề tài: **'Nghiên cứu và Phát triển hệ thống dịch thuật giọng nói thời gian thực Anh – Việt với tối ưu hóa độ trễ sử dụng Deep Learning'**, dưới sự hướng dẫn khoa học của cô **ThS. Trần Uyên Trang**. Sau đây, em xin phép được bắt đầu phần trình bày của mình."
+    *   "Kính thưa các thầy cô trong Hội đồng đánh giá Đồ án tốt nghiệp. Em tên là **[Họ tên của bạn]**, mã số sinh viên là **[MSSV của bạn]**. Hôm nay, em xin phép được trình bày báo cáo đồ án tốt nghiệp của mình với đề tài: **'Nghiên cứu và Phát triển hệ thống dịch thuật giọng nói thời gian thực Anh – Việt với tối ưu hóa độ trễ sử dụng Deep Learning'**, dưới sự hướng dẫn khoa học của cô **TS. Trần Uyên Trang**. Sau đây, em xin phép được bắt đầu phần trình bày của mình."
 
 ---
 
