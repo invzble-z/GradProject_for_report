@@ -2,18 +2,8 @@
 ## PHỤC VỤ CÔNG TÁC RÀ SOÁT VÀ ĐÁNH GIÁ (REVIEW OUTLINE)
 
 **Tên đề tài:** NGHIÊN CỨU VÀ PHÁT TRIỂN HỆ THỐNG DỊCH THUẬT GIỌNG NÓI THỜI GIAN THỰC ANH – VIỆT VỚI TỐI ƯU HÓA ĐỘ TRỄ SỬ DỤNG DEEP LEARNING  
-**Giáo viên hướng dẫn:** ThS. Trần Uyên Trang  
 **Định hướng đồ án:** Nghiên cứu và Phát triển hệ thống (R&D)  
 
----
-
-## 📌 TRANG THỦ TỤC & DẪN NHẬP
-*   **Tiêu đề & Thông tin thủ tục:** Cung cấp thông tin hành chính của đề tài bằng hai ngôn ngữ (Anh - Việt), thông tin sinh viên thực hiện, giáo viên hướng dẫn và các biểu mẫu theo chuẩn định dạng đồ án tốt nghiệp của trường VKU.
-*   **Lời cảm ơn:** Bày tỏ lòng biết ơn sâu sắc tới các thầy cô giáo khoa Khoa học Máy tính, gia đình, bạn bè và đặc biệt là Giáo viên hướng dẫn đã đồng hành, hỗ trợ công cụ, tài nguyên và định hướng khoa học suốt quá trình thực hiện đồ án.
-*   **Danh mục viết tắt:** Tổng hợp bảng định nghĩa 19 thuật ngữ chuyên ngành cốt lõi được sử dụng xuyên suốt trong báo cáo (ví dụ: *ASR, STT, NMT, TTS, VITS, VAD, MOS, WER, CER, RTF, WS, WASAPI*...).
-*   **Danh mục bảng & hình vẽ:** Hệ thống tự động trích xuất danh sách các bảng biểu thực nghiệm và sơ đồ kiến trúc để người đọc dễ dàng định vị nhanh các minh chứng khoa học.
-
----
 
 ## 📘 CHƯƠNG 1. GIỚI THIỆU ĐỀ TÀI (5 - 7 trang)
 
@@ -197,8 +187,3 @@
 *   **Nội dung chính:** Tổng hợp danh mục tài liệu tham khảo chất lượng cao bao gồm 30 tài liệu khoa học, bài báo hội thảo quốc tế uy tín (ICML, Interspeech, ICLR, SciPy) và các kho mã nguồn mở được định dạng chuẩn xác theo chuẩn **APA 7th** (sắp xếp theo thứ tự bảng chữ cái tên tác giả).
 
 ---
-
-## 📎 PHỤ LỤC
-*   **Phụ lục A — Trích đoạn mã nguồn tiêu biểu:** Trình bày các cấu trúc mã nguồn cốt lõi của hệ thống bao gồm: Hợp đồng đa hình Polymorphic Facade của 3 engine; Script huấn luyện tùy biến `train_selfcollect.py` tích hợp callback khóa tham số và ép Learning Rate chủ động; và module wrapper chuẩn hóa văn bản.
-*   **Phụ lục B — Cấu hình hệ thống tiêu biểu:** Cung cấp các file cấu hình hyperparameter huấn luyện mô hình Piper TTS, cấu hình preload/warmup của server, và bảng thông số định tuyến kênh âm thanh ảo của VoiceMeeter Banana.
-*   **Phụ lục C — Dữ liệu thực nghiệm bổ sung:** Lưu trữ bảng số liệu đánh giá chi tiết của 1300 tệp âm thanh kiểm thử held-out, biểu đồ phân bố và danh sách 25 câu curated dùng để rà soát chất lượng âm học.
